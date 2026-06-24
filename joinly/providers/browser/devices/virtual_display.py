@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 import re
 from typing import Self
 
@@ -41,6 +42,11 @@ class VirtualDisplay:
 
     async def __aenter__(self) -> Self:
         """Start the Xvfb display."""
+        if os.name == "nt":
+            logger.warning("VirtualDisplay: Skipping Xvfb startup on Windows host.")
+            self.display_name = ":99"
+            return self
+
         if self._proc is not None:
             msg = "Xvfb already started"
             raise RuntimeError(msg)
@@ -117,6 +123,9 @@ class VirtualDisplay:
 
     async def __aexit__(self, *_exc: object) -> None:
         """Stop the Xvfb display."""
+        if os.name == "nt":
+            return
+
         if self._proc is None:
             logger.warning("Xvfb is not started, skipping exit")
             return

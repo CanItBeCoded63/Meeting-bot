@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 import tempfile
 from pathlib import Path
 from typing import Self
@@ -35,6 +36,10 @@ class PulseServer(PulseModuleManager):
 
     async def __aenter__(self) -> Self:
         """Start the audio server."""
+        if os.name == "nt":
+            logger.warning("PulseServer: Skipping audio server startup on Windows host.")
+            return self
+
         if self._proc is not None:
             msg = "Pulse server already started"
             raise RuntimeError(msg)
@@ -58,7 +63,8 @@ class PulseServer(PulseModuleManager):
         )
 
         try:
-            await asyncio.wait_for(_wait_for_server(self.socket_path), timeout=5)
+            if os.name != "nt":
+                await asyncio.wait_for(_wait_for_server(self.socket_path), timeout=5)
         except TimeoutError as e:
             msg = "PulseAudio server did not start in time"
             logger.error(msg)  # noqa: TRY400
@@ -73,6 +79,9 @@ class PulseServer(PulseModuleManager):
 
     async def __aexit__(self, *_exc: object) -> None:
         """Stop the audio server."""
+        if os.name == "nt":
+            return
+
         if self._proc is None or self._proc.returncode is not None:
             logger.warning("No PulseAudio server to stop")
         else:

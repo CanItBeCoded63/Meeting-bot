@@ -1,9 +1,11 @@
 import asyncio
 import contextlib
-import fcntl
 import logging
 import os
 import tempfile
+
+if os.name != "nt":
+    import fcntl
 import uuid
 from pathlib import Path
 from typing import Self
@@ -31,8 +33,8 @@ class VirtualMicrophone(PulseModuleManager, AudioWriter):
         fifo_path: Path | None = None,
         source_name: str | None = None,
         chunk_ms: int = 10,
-        queue_size: int = 2,
-        max_missed_chunks: int = 10,
+        queue_size: int = 30,
+        max_missed_chunks: int = 30,
         env: dict[str, str] | None = None,
     ) -> None:
         """Initialize the VirtualMicrophone.
@@ -60,7 +62,7 @@ class VirtualMicrophone(PulseModuleManager, AudioWriter):
         self.chunk_size = (
             int(sample_rate * chunk_ms / 1000) * self.audio_format.byte_depth
         )
-        self.pipe_size = pipe_size if pipe_size is not None else self.chunk_size * 2
+        self.pipe_size = pipe_size if pipe_size is not None else self.chunk_size * 30
         self.chunk_ms = (
             self.chunk_size
             / (self.audio_format.byte_depth * self.audio_format.sample_rate)
@@ -112,7 +114,8 @@ class VirtualMicrophone(PulseModuleManager, AudioWriter):
 
         logger.debug("Setting up FIFO file for writing: %s", self.fifo_path)
         fd = os.open(self.fifo_path, os.O_WRONLY)
-        fcntl.fcntl(fd, fcntl.F_SETPIPE_SZ, self.pipe_size)
+        if os.name != "nt":
+            fcntl.fcntl(fd, fcntl.F_SETPIPE_SZ, self.pipe_size)
 
         loop = asyncio.get_running_loop()
         transport, protocol = await loop.connect_write_pipe(

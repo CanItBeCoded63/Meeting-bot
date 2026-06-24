@@ -1,2 +1,4 @@
 
-# Common library for joinly: Make your meetings accessible to AI Agents
+# Common Package
+
+Shared models and types used across workspace packages.

@@ -1,7 +1,9 @@
 import asyncio
 import json
 import logging
+import signal
 from contextlib import AsyncExitStack
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -212,6 +214,13 @@ def _parse_kv(
     default=1,
 )
 @click.option(
+    "--auto-leave/--no-auto-leave",
+    is_flag=True,
+    help="Automatically leave the meeting once all other participants have left.",
+    default=True,
+    show_default=True,
+)
+@click.option(
     "-q", "--quiet", is_flag=True, help="Suppress all but error and critical logging."
 )
 @click.argument(
@@ -230,6 +239,7 @@ def cli(  # noqa: PLR0913
     prompt_style: str,
     name_trigger: bool,
     mcp_config: str | None,
+    auto_leave: bool,
     meeting_url: str,
     verbose: int,
     quiet: bool,
@@ -283,6 +293,7 @@ def cli(  # noqa: PLR0913
                 name=name,
                 name_trigger=name_trigger,
                 mcp_config=mcp_config_dict,
+                auto_leave=auto_leave,
                 settings={k: v for k, v in settings.items() if v is not None},
             )
         )
@@ -290,7 +301,7 @@ def cli(  # noqa: PLR0913
         logger.info("Exiting due to keyboard interrupt.")
 
 
-async def run(  # noqa: PLR0913
+async def run(  # noqa: PLR0913, C901
     joinly_url: str | FastMCP,
     meeting_url: str,
     llm_provider: str,
@@ -302,6 +313,7 @@ async def run(  # noqa: PLR0913
     name_trigger: bool = False,
     mcp_config: dict[str, Any] | None = None,
     settings: dict[str, Any] | None = None,
+    auto_leave: bool = True,
 ) -> None:
     """Run the joinly client.
 
@@ -317,7 +329,13 @@ async def run(  # noqa: PLR0913
             mentioned.
         mcp_config (dict[str, Any] | None): Configuration for additional MCP servers.
         settings (dict[str, Any] | None): Additional settings for the client.
+        auto_leave (bool): Automatically leave the meeting once all other
+            participants have left.
     """
+    # Event set by the LLM tool when a participant asks the bot to leave.
+    # The main monitoring loop watches this and triggers summary + leave.
+    requested_leave_event = asyncio.Event()
+
     client = JoinlyClient(
         joinly_url,
         name=name,
@@ -359,15 +377,45 @@ async def run(  # noqa: PLR0913
             logger.debug("Connected to %s", client_name)
 
         joinly_config = McpClientConfig(client=client.client, exclude=["join_meeting"])
+
+        # ── request_leave tool ───────────────────────────────────────────────────
+        # Registered as an in-process FastMCP tool so the LLM can trigger a
+        # graceful leave (summary → chat → leave_meeting) without calling
+        # leave_meeting directly, which would skip the summary step.
+        internal_mcp = FastMCP("joinly-internal")
+
+        @internal_mcp.tool()
+        async def request_leave() -> str:  # noqa: RUF029
+            """Signal that the bot should generate the meeting summary, post it to
+            chat, and then gracefully leave the meeting. Call this when any
+            participant explicitly asks the bot to leave the meeting."""
+            logger.info("request_leave tool invoked — triggering graceful leave.")
+            requested_leave_event.set()
+            return "Leave requested. I will post the meeting summary and leave shortly."
+
+        async def _speak_filler(tool_name: str, args: dict[str, Any]) -> None:
+            import random
+            fillers = [
+                "Let me check that for you.",
+                "Sure, give me just a moment.",
+                "On it — one second.",
+                "Let me look that up real quick.",
+                "Good question, pulling that up now."
+            ]
+            asyncio.create_task(client.speak_text(random.choice(fillers)))
+
         tools, tool_executor = await load_tools(
-            joinly_config
-            if not additional_clients
-            else {
+            {
                 "joinly": joinly_config,
-                **{
-                    name: McpClientConfig(client)
-                    for name, client in additional_clients.items()
-                },
+                "joinly-internal": McpClientConfig(client=internal_mcp),
+                **(
+                    {
+                        n: McpClientConfig(c, pre_callback=_speak_filler)
+                        for n, c in additional_clients.items()
+                    }
+                    if additional_clients
+                    else {}
+                ),
             }
         )
         agent = client.create_agent(
@@ -381,10 +429,196 @@ async def run(  # noqa: PLR0913
             ),
         )
         async with agent:
+            meeting_start_time = datetime.now(tz=UTC)
+            meeting_start_str = meeting_start_time.strftime("%H:%M UTC")
+            # Re-inject prompt with actual meeting start time
+            agent._prompt = get_prompt(  # noqa: SLF001
+                instructions=prompt,
+                prompt_style=prompt_style,
+                name=client.name,
+                meeting_start=meeting_start_str,
+            )
             await client.join_meeting(meeting_url)
+
+            # Set up graceful shutdown on SIGTERM / SIGINT (docker stop)
+            shutdown_event = asyncio.Event()
+            loop = asyncio.get_running_loop()
+            for sig in (signal.SIGTERM, signal.SIGINT):
+                loop.add_signal_handler(sig, shutdown_event.set)
+
             try:
-                await asyncio.Event().wait()
+                if auto_leave:
+                    logger.info(
+                        "Auto-leave enabled. Monitoring participant count..."
+                    )
+                    while not shutdown_event.is_set():
+                        # Check both shutdown signal AND requested-leave every 10s
+                        try:
+                            done, _ = await asyncio.wait(
+                                [
+                                    asyncio.create_task(shutdown_event.wait()),
+                                    asyncio.create_task(requested_leave_event.wait()),
+                                ],
+                                timeout=10,
+                                return_when=asyncio.FIRST_COMPLETED,
+                            )
+                        except Exception:  # noqa: BLE001
+                            done = set()
+
+                        if shutdown_event.is_set():
+                            break  # SIGTERM / docker stop
+
+                        if requested_leave_event.is_set():
+                            logger.info(
+                                "Participant requested leave — generating summary and leaving."
+                            )
+                            # Speak a farewell immediately so participants hear it
+                            try:
+                                await client.speak_text(
+                                    "Sure, I'll wrap up now. Let me post the meeting summary in the chat before I go."
+                                )
+                            except Exception:  # noqa: BLE001
+                                pass
+                            break
+
+                        try:
+                            participants = await client.get_participants()
+                            # If the bot is the only participant left, auto-leave
+                            if len(participants.root) <= 1:
+                                logger.info(
+                                    "No other participants left. Auto-leaving..."
+                                )
+                                break
+                        except Exception as e:  # noqa: BLE001
+                            logger.warning(
+                                "Failed to check participants (will retry): %s",
+                                e,
+                            )
+                else:
+                    # No auto-leave: wait for SIGTERM or a requested-leave
+                    await asyncio.wait(
+                        [
+                            asyncio.create_task(shutdown_event.wait()),
+                            asyncio.create_task(requested_leave_event.wait()),
+                        ],
+                        return_when=asyncio.FIRST_COMPLETED,
+                    )
+                    if requested_leave_event.is_set():
+                        try:
+                            await client.speak_text(
+                                "Sure, I'll wrap up now. Let me post the meeting summary in the chat before I go."
+                            )
+                        except Exception:  # noqa: BLE001
+                            pass
             finally:
+                # --- End-of-meeting summary ---
+                try:
+                    from pydantic_ai.direct import model_request  # noqa: PLC0415
+                    from pydantic_ai.messages import ModelRequest, SystemPromptPart, UserPromptPart  # noqa: PLC0415
+                    from pydantic_ai.models import ModelRequestParameters  # noqa: PLC0415
+
+                    elapsed = datetime.now(tz=UTC) - meeting_start_time
+                    mins = int(elapsed.total_seconds() // 60)
+
+                    # Capture ONLY real human participant utterances (UserPromptPart lines
+                    # that look like "Speaker: text") — excludes system prompts, tool
+                    # returns, and Alex's internal speak_text calls so the transcript
+                    # reflects the true conversation and nothing gets silently dropped.
+                    convo_lines = []
+                    for m in agent._messages:  # noqa: SLF001
+                        for p in getattr(m, "parts", []):
+                            if (
+                                isinstance(p, UserPromptPart)
+                                and isinstance(p.content, str)
+                                and ": " in p.content          # "Speaker: text" shape
+                                and len(p.content) > 5
+                            ):
+                                convo_lines.append(p.content)
+
+                    # Also capture Alex's spoken replies (joinly_speak_text tool args)
+                    from pydantic_ai.messages import ModelResponse, ToolCallPart  # noqa: PLC0415
+                    for m in agent._messages:  # noqa: SLF001
+                        if isinstance(m, ModelResponse):
+                            for p in m.parts:
+                                if (
+                                    isinstance(p, ToolCallPart)
+                                    and p.tool_name == "joinly_speak_text"
+                                    and isinstance(p.args, str)
+                                ):
+                                    try:
+                                        import json  # noqa: PLC0415
+                                        text = json.loads(p.args).get("text", "")
+                                        if text:
+                                            convo_lines.append(f"Alex: {text}")
+                                    except Exception:  # noqa: BLE001
+                                        pass
+
+                    # Sort is not needed — messages are already chronological.
+                    # Cap at last 120 lines to include long meetings.
+                    convo_text = "\n".join(convo_lines[-120:])
+
+                    if convo_text.strip():
+                        summary_response = await model_request(
+                            llm,
+                            [
+                                ModelRequest(parts=[
+                                    SystemPromptPart(
+                                        "You are a professional meeting summariser. "
+                                        "Given a meeting transcript, you MUST always produce ALL of the "
+                                        "following sections, even if a section has nothing to report "
+                                        "(write 'None' in that case):\n\n"
+                                        "OVERVIEW\n"
+                                        "2-4 sentences describing what the meeting was about and main outcomes.\n\n"
+                                        "KEY DECISIONS\n"
+                                        "Bullet list of concrete decisions made. Include 'None' if no decisions.\n\n"
+                                        "ACTION ITEMS\n"
+                                        "Bullet list with: action, owner (person responsible), and deadline if mentioned. "
+                                        "Include ALL commitments, follow-ups, and 'will look into it' type statements. "
+                                        "If no owner was named, write 'Owner: unassigned'. "
+                                        "Include 'None' if no action items.\n\n"
+                                        "FOLLOW-UPS\n"
+                                        "Bullet list of open questions, topics deferred, or items needing further discussion. "
+                                        "Include 'None' if no follow-ups.\n\n"
+                                        "Use plain text. Keep each bullet point concise (1 line)."
+                                    ),
+                                    UserPromptPart(
+                                        f"Meeting duration: {mins} minutes.\n\n"
+                                        f"Transcript:\n{convo_text}"
+                                    ),
+                                ])
+                            ],
+                            model_request_parameters=ModelRequestParameters(
+                                function_tools=[],
+                                allow_text_output=True,
+                                output_tools=[],
+                            ),
+                        )
+                        from pydantic_ai.messages import TextPart  # noqa: PLC0415
+                        summary_text = next(
+                            (p.content for p in summary_response.parts if isinstance(p, TextPart)),
+                            None,
+                        )
+                        if summary_text:
+                            header = f"📋 Meeting Summary ({mins} min)\n\n"
+                            full_msg = header + summary_text
+                            logger.info("Full summary (%d chars):\n%s", len(full_msg), full_msg)
+                            # Split into chunks ≤ 1900 chars — Teams allows up to 28k but
+                            # chat messages render best when kept readable.
+                            chunk_size = 1900
+                            for i in range(0, len(full_msg), chunk_size):
+                                await client.send_chat_message(full_msg[i:i + chunk_size])
+                            logger.info("Meeting summary posted to chat.")
+                    else:
+                        logger.warning("No participant conversation found — skipping summary.")
+                except Exception as summary_err:  # noqa: BLE001
+                    logger.warning("Failed to generate meeting summary: %s", summary_err)
+
+                # Gracefully leave the meeting on any exit (SIGTERM, auto-leave, etc.)
+                logger.info("Leaving meeting before exit...")
+                try:
+                    await client.leave_meeting()
+                except Exception:  # noqa: BLE001
+                    pass  # already left or meeting ended
                 usage = agent.usage.merge(await client.get_usage())
                 if usage.root:
                     logger.info("Usage:\n%s", usage)

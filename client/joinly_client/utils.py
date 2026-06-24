@@ -88,6 +88,7 @@ def get_prompt(
     instructions: str | None = None,
     prompt_style: str | None = None,
     name: str = "joinly",
+    meeting_start: str | None = None,
 ) -> str:
     """Get the prompt template for the agent.
 
@@ -97,6 +98,8 @@ def get_prompt(
         If None, uses instructions based on prompt_style.
         prompt_style (str): The type of default instructions to use. Defaults to "mpc".
         name (str): The name of the agent. Defaults to 'joinly'.
+        meeting_start (str): ISO timestamp of when the meeting started. Used for
+            time-awareness in the prompt.
 
     Returns:
         str: The formatted prompt template.
@@ -107,7 +110,8 @@ def get_prompt(
             DYADIC_INSTRUCTIONS if prompt_style == "dyadic" else MPC_INSTRUCTIONS
         )
     today = datetime.now(tz=UTC).date().isoformat()
-    return template.format(date=today, name=name, instructions=instructions)
+    start = meeting_start or datetime.now(tz=UTC).strftime("%H:%M UTC")
+    return template.format(date=today, name=name, instructions=instructions, meeting_start=start)
 
 
 class _Mapper(MCPServer):
@@ -245,14 +249,29 @@ async def load_tools(  # noqa: C901
         """Execute a tool with the given name and arguments."""
         if isinstance(clients, McpClientConfig):
             client = clients.client
+            pre_callback = clients.pre_callback
             post_callback = clients.post_callback
         else:
-            prefix, tool_name = tool_name.split("_", 1)
-            if prefix not in clients:
-                msg = f"MCP '{prefix}' not found"
+            prefix = None
+            for p in clients:
+                if tool_name.startswith(f"{p}_"):
+                    prefix = p
+                    break
+
+            if prefix is None:
+                msg = f"MCP prefix for tool '{tool_name}' not found"
                 raise ValueError(msg)
+
+            tool_name = tool_name[len(prefix) + 1 :]
             client = clients[prefix].client
+            pre_callback = clients[prefix].pre_callback
             post_callback = clients[prefix].post_callback
+
+        if pre_callback:
+            try:
+                await pre_callback(tool_name, args)
+            except Exception:
+                logger.exception("Error in pre_callback for %s", tool_name)
 
         result = await client.call_tool_mcp(tool_name, args)
         if post_callback:

@@ -1,8 +1,10 @@
 import asyncio
-import fcntl
 import logging
 import os
 import tempfile
+
+if os.name != "nt":
+    import fcntl
 import uuid
 from pathlib import Path
 from typing import Self
@@ -85,7 +87,8 @@ class VirtualSpeaker(PulseModuleManager, AudioReader):
             raise RuntimeError(msg)
 
         logger.debug("Creating FIFO file: %s", self.fifo_path)
-        os.mkfifo(self.fifo_path, 0o600)
+        if os.name != "nt":
+            os.mkfifo(self.fifo_path, 0o600)
 
         logger.debug("Creating virtual audio sink: %s", self.sink_name)
         self._module_id = await self._load_module(
@@ -105,13 +108,16 @@ class VirtualSpeaker(PulseModuleManager, AudioReader):
         )
 
         logger.debug("Setting up FIFO file for reading: %s", self.fifo_path)
-        fd = os.open(self.fifo_path, os.O_RDWR | os.O_NONBLOCK)
-        fcntl.fcntl(fd, fcntl.F_SETPIPE_SZ, self.pipe_size)
+        fd = None
+        if os.name != "nt":
+            fd = os.open(self.fifo_path, os.O_RDWR | os.O_NONBLOCK)
+            fcntl.fcntl(fd, fcntl.F_SETPIPE_SZ, self.pipe_size)
 
         reader = asyncio.StreamReader()
         protocol = asyncio.StreamReaderProtocol(reader)
         loop = asyncio.get_running_loop()
-        await loop.connect_read_pipe(lambda: protocol, os.fdopen(fd, "rb", buffering=0))
+        if fd is not None:
+            await loop.connect_read_pipe(lambda: protocol, os.fdopen(fd, "rb", buffering=0))
         self._reader = reader
 
         self._env[_ENV_VAR] = self.sink_name

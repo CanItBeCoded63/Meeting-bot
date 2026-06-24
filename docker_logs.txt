@@ -1,0 +1,903 @@
+﻿docker : [2026-06-13 08:11:44] INFO     joinly.server: Creating meeting session
+At line:1 char:1
++ docker logs joinly-server 2>&1 | Out-File -FilePath docker_logs.txt - ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2026-06-13 08:...meeting session:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2026-06-13 08:11:44] INFO     joinly.services.vad.silero: Loading ONNX Silero VAD model
+[2026-06-13 08:11:44] INFO     joinly.services.stt.sarvam: Initialized Sarvam STT with model: saaras:v3
+[2026-06-13 08:11:44] INFO     joinly.services.tts.sarvam: Initialized Sarvam TTS with model: bulbul:v3 and 
+voice/speaker: shubh
+[2026-06-13 08:11:47] INFO     joinly_client.client: Joining meeting at 
+https://teams.microsoft.com/meet/239038864361347?p=Urr9KDu3BmGIDsZsKW
+[2026-06-13 08:11:47] INFO     joinly_client.client: Utterance update ignored because client not joined
+[2026-06-13 08:12:14] WARNING  joinly.providers.browser.devices.virtual_microphone: Missed 3168 mic pacing intervals, 
+adjusting next deadline
+[2026-06-13 08:12:17] INFO     joinly.providers.browser.meeting_provider: Successfully performed 'join'.
+[2026-06-13 08:12:17] INFO     joinly_client.client: Joined meeting successfully
+[2026-06-13 08:12:35] WARNING  joinly.providers.browser.devices.virtual_microphone: Missed 27 mic pacing intervals, 
+adjusting next deadline
+[2026-06-13 08:12:36] WARNING  joinly.providers.browser.devices.virtual_microphone: Missed 28 mic pacing intervals, 
+adjusting next deadline
+[2026-06-13 08:12:36] WARNING  joinly.providers.browser.devices.virtual_microphone: Missed 28 mic pacing intervals, 
+adjusting next deadline
+[2026-06-13 08:12:36] WARNING  joinly.controllers.transcription.default: STT utterance latency: 1.790s
+[2026-06-13 08:12:36] INFO     joinly_client.main: Yashwardhan Singh Chouhan: "Like"
+[2026-06-13 08:12:36] INFO     joinly_client.client: Utterance update: new_transcript text: 'Like', number of 
+segments: 1
+[2026-06-13 08:12:36] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=False, is_in_conversation_window=False (active=None, current=Yashwardhan Singh Chouhan) -> 
+is_triggered=False
+[2026-06-13 08:12:37] INFO     joinly.providers.browser.meeting_provider: Successfully performed 'unmute'.
+[2026-06-13 08:12:51] WARNING  joinly.controllers.transcription.default: STT utterance latency: 1.708s
+[2026-06-13 08:12:51] INFO     joinly_client.main: Yashwardhan Singh Chouhan: "legs"
+[2026-06-13 08:12:51] INFO     joinly_client.client: Utterance update: new_transcript text: 'Like legs', number of 
+segments: 2
+[2026-06-13 08:12:51] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=False, is_in_conversation_window=False (active=None, current=Yashwardhan Singh Chouhan) -> 
+is_triggered=False
+[2026-06-13 08:12:55] WARNING  joinly.controllers.transcription.default: STT utterance latency: 0.873s
+[2026-06-13 08:12:55] INFO     joinly_client.main: Yashwardhan Singh Chouhan: "Yeah Alex, can you hear me?"
+[2026-06-13 08:12:55] INFO     joinly_client.client: Utterance update: new_transcript text: 'Like legs Yeah Alex, can 
+you hear me?', number of segments: 3
+[2026-06-13 08:12:55] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=True, is_in_conversation_window=False (active=None, current=Yashwardhan Singh Chouhan) -> 
+is_triggered=True
+[2026-06-13 08:12:55] INFO     joinly_client.client: Triggered! Calling 1 callbacks
+[2026-06-13 08:12:55] INFO     joinly_client.agent: Calling LLM with 1 messages. Last message: 
+ModelRequest(parts=[UserPromptPart(content='Yashwardhan Singh Chouhan: Like', timestamp=datetime.datetime(2026, 6, 13, 
+8, 12, 55, 233118, tzinfo=datetime.timezone.utc)), UserPromptPart(content='Yashwardhan Singh Chouhan: legs', 
+timestamp=datetime.datetime(2026, 6, 13, 8, 12, 55, 233152, tzinfo=datetime.timezone.utc)), 
+UserPromptPart(content='Yashwardhan Singh Chouhan: Yeah Alex, can you hear me?', timestamp=datetime.datetime(2026, 6, 
+13, 8, 12, 55, 233160, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:12:56] WARNING  joinly.providers.browser.devices.virtual_microphone: Missed 78 mic pacing intervals, 
+adjusting next deadline
+[2026-06-13 08:12:59] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='speak_text', args='{"text":"Yes, I can hear you clearly."}', 
+tool_call_id='call_IJpKBoYtXGyro556rYTEnWtX')]. 2157 input tokens and 32 output tokens
+[2026-06-13 08:12:59] INFO     joinly_client.agent: speak_text: text="Yes, I can hear you clearly."
+[2026-06-13 08:13:00] WARNING  joinly.controllers.transcription.default: STT utterance latency: 0.741s
+[2026-06-13 08:13:00] INFO     joinly_client.main: Yashwardhan Singh Chouhan: "Yeah, like."
+[2026-06-13 08:13:00] INFO     joinly_client.client: Utterance update: new_transcript text: 'Yeah, like.', number of 
+segments: 1
+[2026-06-13 08:13:00] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=False, is_in_conversation_window=True (active=Yashwardhan Singh Chouhan, current=Yashwardhan Singh 
+Chouhan) -> is_triggered=True
+[2026-06-13 08:13:00] INFO     joinly_client.client: Triggered! Calling 1 callbacks
+[2026-06-13 08:13:00] INFO     joinly_client.agent: Calling LLM with 2 messages. Last message: 
+ModelRequest(parts=[UserPromptPart(content='Yashwardhan Singh Chouhan: Yeah, like.', timestamp=datetime.datetime(2026, 
+6, 13, 8, 13, 0, 330870, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:13:02] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='speak_text', args='{"text":"Yes, I can hear you clearly."}', 
+tool_call_id='call_z7ghfaFnKcwISIbWyrxGj1ix')]. 2174 input tokens and 32 output tokens
+[2026-06-13 08:13:02] INFO     joinly_client.agent: speak_text: text="Yes, I can hear you clearly."
+[2026-06-13 08:13:02] WARNING  joinly.providers.browser.devices.virtual_microphone: Missed 22 mic pacing intervals, 
+adjusting next deadline
+[2026-06-13 08:13:03] INFO     joinly_client.main: Alex: "Yes, I can hear you clearly."
+[2026-06-13 08:13:06] INFO     joinly_client.agent: speak_text: Finished speaking.
+[2026-06-13 08:13:06] INFO     joinly_client.agent: Calling LLM with 4 messages. Last message: 
+ModelRequest(parts=[ToolReturnPart(tool_name='speak_text', content='Finished speaking.', 
+tool_call_id='call_z7ghfaFnKcwISIbWyrxGj1ix', timestamp=datetime.datetime(2026, 6, 13, 8, 13, 6, 762652, 
+tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:13:06] INFO     joinly_client.main: Alex: "Yes, I can hear you clearly."
+[2026-06-13 08:13:07] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='end_turn', args='{}', tool_call_id='call_BCiwXrZYAYL4BRh2ZQNbkvoW')]. 2214 input tokens and 
+14 output tokens
+[2026-06-13 08:13:13] WARNING  joinly.controllers.transcription.default: STT utterance latency: 0.901s
+[2026-06-13 08:13:13] INFO     joinly_client.main: Yashwardhan Singh Chouhan: "Hey Alex, can you help me with 
+something?"
+[2026-06-13 08:13:13] INFO     joinly_client.client: Utterance update: new_transcript text: 'Hey Alex, can you help me 
+with something?', number of segments: 1
+[2026-06-13 08:13:13] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=True, is_in_conversation_window=True (active=Yashwardhan Singh Chouhan, current=Yashwardhan Singh 
+Chouhan) -> is_triggered=True
+[2026-06-13 08:13:13] INFO     joinly_client.client: Triggered! Calling 1 callbacks
+[2026-06-13 08:13:13] INFO     joinly_client.agent: Calling LLM with 7 messages. Last message: 
+ModelRequest(parts=[UserPromptPart(content='Yashwardhan Singh Chouhan: Hey Alex, can you help me with something?', 
+timestamp=datetime.datetime(2026, 6, 13, 8, 13, 13, 136328, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:13:16] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='speak_text', args='{"text":"Of courseΓÇöwhat do you need help with?"}', 
+tool_call_id='call_DWAfwSpv102fZ5x0xkN8drRx')]. 2261 input tokens and 34 output tokens
+[2026-06-13 08:13:16] INFO     joinly_client.agent: speak_text: text="Of courseΓÇöwhat do you need help with?"
+[2026-06-13 08:13:20] INFO     joinly_client.agent: speak_text: Finished speaking.
+[2026-06-13 08:13:20] INFO     joinly_client.agent: Calling LLM with 9 messages. Last message: 
+ModelRequest(parts=[ToolReturnPart(tool_name='speak_text', content='Finished speaking.', 
+tool_call_id='call_DWAfwSpv102fZ5x0xkN8drRx', timestamp=datetime.datetime(2026, 6, 13, 8, 13, 20, 754309, 
+tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:13:20] INFO     joinly_client.main: Alex: "Of courseΓÇöwhat do you need help with?"
+[2026-06-13 08:13:22] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='end_turn', args='{}', tool_call_id='call_InqxSTMOiVEqWxlRBXIb2pZy')]. 2303 input tokens and 
+14 output tokens
+[2026-06-13 08:13:28] WARNING  joinly.controllers.transcription.default: STT utterance latency: 0.920s
+[2026-06-13 08:13:28] INFO     joinly_client.main: Yashwardhan Singh Chouhan: "Yeah, I need some help with Airbnb 
+booking."
+[2026-06-13 08:13:28] INFO     joinly_client.client: Utterance update: new_transcript text: 'Yeah, I need some help 
+with Airbnb booking.', number of segments: 1
+[2026-06-13 08:13:28] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=False, is_in_conversation_window=True (active=Yashwardhan Singh Chouhan, current=Yashwardhan Singh 
+Chouhan) -> is_triggered=True
+[2026-06-13 08:13:28] INFO     joinly_client.client: Triggered! Calling 1 callbacks
+[2026-06-13 08:13:28] INFO     joinly_client.agent: Calling LLM with 12 messages. Last message: 
+ModelRequest(parts=[UserPromptPart(content='Yashwardhan Singh Chouhan: Yeah, I need some help with Airbnb booking.', 
+timestamp=datetime.datetime(2026, 6, 13, 8, 13, 28, 305328, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:13:31] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='speak_text', args='{"text":"SureΓÇöwhat specifically do you need help with for the Airbnb 
+booking?"}', tool_call_id='call_LW83zWGbmbppVBOktN99m1Ru')]. 2350 input tokens and 38 output tokens
+[2026-06-13 08:13:31] INFO     joinly_client.agent: speak_text: text="SureΓÇöwhat specifically do you need help with 
+for the Airbnb booking?"
+[2026-06-13 08:13:37] INFO     joinly_client.agent: speak_text: Finished speaking.
+[2026-06-13 08:13:37] INFO     joinly_client.agent: Calling LLM with 14 messages. Last message: 
+ModelRequest(parts=[ToolReturnPart(tool_name='speak_text', content='Finished speaking.', 
+tool_call_id='call_LW83zWGbmbppVBOktN99m1Ru', timestamp=datetime.datetime(2026, 6, 13, 8, 13, 37, 82937, 
+tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:13:37] INFO     joinly_client.main: Alex: "SureΓÇöwhat specifically do you need help with for the 
+Airbnb booking?"
+[2026-06-13 08:13:39] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='end_turn', args='{}', tool_call_id='call_t4P4LEOh2PqUAZHalB4ieuvW')]. 2396 input tokens and 
+14 output tokens
+[2026-06-13 08:13:42] WARNING  joinly.controllers.transcription.default: STT utterance latency: 0.585s
+[2026-06-13 08:13:42] INFO     joinly_client.main: Yashwardhan Singh Chouhan: "Hmm"
+[2026-06-13 08:13:42] INFO     joinly_client.client: Utterance update: new_transcript text: 'Hmm', number of segments: 
+1
+[2026-06-13 08:13:42] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=False, is_in_conversation_window=True (active=Yashwardhan Singh Chouhan, current=Yashwardhan Singh 
+Chouhan) -> is_triggered=True
+[2026-06-13 08:13:42] INFO     joinly_client.client: Triggered! Calling 1 callbacks
+[2026-06-13 08:13:42] INFO     joinly_client.agent: Calling LLM with 17 messages. Last message: 
+ModelRequest(parts=[UserPromptPart(content='Yashwardhan Singh Chouhan: Hmm', timestamp=datetime.datetime(2026, 6, 13, 
+8, 13, 42, 108236, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:13:43] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='speak_text', args='{"text":"No rushΓÇöare you trying to book a place, change a reservation, 
+or resolve an issue with a host?"}', tool_call_id='call_mCLKdBy4G8Cf50n9WZnUy1b1')]. 2434 input tokens and 47 output 
+tokens
+[2026-06-13 08:13:43] INFO     joinly_client.agent: speak_text: text="No rushΓÇöare you trying to book a place, change 
+a reservation, or resolve an issue with a host?"
+[2026-06-13 08:13:45] WARNING  joinly.controllers.transcription.default: STT utterance latency: 0.741s
+[2026-06-13 08:13:45] INFO     joinly_client.main: Yashwardhan Singh Chouhan: "Can you book a Airbnb for me?"
+[2026-06-13 08:13:45] INFO     joinly_client.client: Utterance update: new_transcript text: 'Can you book a Airbnb for 
+me?', number of segments: 1
+[2026-06-13 08:13:45] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=False, is_in_conversation_window=True (active=Yashwardhan Singh Chouhan, current=Yashwardhan Singh 
+Chouhan) -> is_triggered=True
+[2026-06-13 08:13:45] INFO     joinly_client.client: Triggered! Calling 1 callbacks
+[2026-06-13 08:13:45] INFO     joinly_client.agent: Calling LLM with 18 messages. Last message: 
+ModelRequest(parts=[UserPromptPart(content='Yashwardhan Singh Chouhan: Can you book a Airbnb for me?', 
+timestamp=datetime.datetime(2026, 6, 13, 8, 13, 45, 312985, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:13:45] WARNING  joinly.providers.browser.devices.virtual_microphone: Missed 12 mic pacing intervals, 
+adjusting next deadline
+[2026-06-13 08:13:47] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='speak_text', args='{"text":"I canΓÇÖt book it on your behalf, but I can guide you step by 
+step or help you choose the right listingΓÇödo you want help finding options or walking through the booking 
+process?"}', tool_call_id='call_iA2N0C9PqS3ZKmbbKxsgCCFe')]. 2455 input tokens and 62 output tokens
+[2026-06-13 08:13:47] INFO     joinly_client.agent: speak_text: text="I canΓÇÖt book it on your behalf, but I can 
+guide you step by step or help you choose the right listingΓÇödo you want help finding options or walking through the 
+booking process?"
+[2026-06-13 08:13:50] INFO     joinly_client.main: Alex: "No rushΓÇöare you trying to book a place, change a 
+reservation,"
+[2026-06-13 08:13:49] INFO     joinly_client.main: Alex: "or resolve an issue with a host?"
+[2026-06-13 08:13:52] INFO     joinly_client.main: Alex: "I canΓÇÖt book it on your behalf,"
+[2026-06-13 08:13:53] WARNING  joinly.controllers.transcription.default: STT utterance latency: 0.581s
+[2026-06-13 08:13:53] INFO     joinly_client.main: Yashwardhan Singh Chouhan: "Okay"
+[2026-06-13 08:13:53] INFO     joinly_client.client: Utterance update: new_transcript text: 'Okay', number of 
+segments: 1
+[2026-06-13 08:13:53] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=False, is_in_conversation_window=True (active=Yashwardhan Singh Chouhan, current=Yashwardhan Singh 
+Chouhan) -> is_triggered=True
+[2026-06-13 08:13:53] INFO     joinly_client.client: Triggered! Calling 1 callbacks
+[2026-06-13 08:13:53] INFO     joinly_client.agent: Calling LLM with 19 messages. Last message: 
+ModelRequest(parts=[UserPromptPart(content='Yashwardhan Singh Chouhan: Okay', timestamp=datetime.datetime(2026, 6, 13, 
+8, 13, 53, 959519, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:13:57] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='speak_text', args='{"text":"I canΓÇÖt book it on your behalf, but I can absolutely help you 
+choose the right Airbnb and walk you through the booking step by step. Where are you traveling, and what dates and 
+budget do you have in mind?"}', tool_call_id='call_4n8csb26s0VCsVjhFzkK9UCd')]. 2469 input tokens and 69 output tokens
+[2026-06-13 08:13:57] INFO     joinly_client.agent: speak_text: text="I canΓÇÖt book it on your behalf, but I can 
+absolutely help you choose the right Airbnb and walk you through the booking step by step. Where are you traveling, 
+and what dates and budget do you have in mind?"
+[2026-06-13 08:13:58] INFO     joinly_client.main: Alex: "but I can guide you step by step or help you choose the 
+right listingΓÇödo"
+[2026-06-13 08:14:02] INFO     joinly_client.main: Alex: "you want help finding options or walking through the booking 
+process?"
+[2026-06-13 08:14:06] INFO     joinly_client.agent: speak_text: Interrupted by detected speech. Spoken until now: "I 
+canΓÇÖt..."
+[2026-06-13 08:14:07] INFO     joinly_client.main: Alex: "I canΓÇÖt..."
+[2026-06-13 08:14:08] WARNING  joinly.controllers.transcription.default: STT utterance latency: 0.815s
+[2026-06-13 08:14:08] INFO     joinly_client.main: Yashwardhan Singh Chouhan: "Okay, can you"
+[2026-06-13 08:14:08] INFO     joinly_client.client: Utterance update: new_transcript text: 'Okay, can you', number of 
+segments: 1
+[2026-06-13 08:14:08] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=False, is_in_conversation_window=True (active=Yashwardhan Singh Chouhan, current=Yashwardhan Singh 
+Chouhan) -> is_triggered=True
+[2026-06-13 08:14:08] INFO     joinly_client.client: Triggered! Calling 1 callbacks
+[2026-06-13 08:14:08] INFO     joinly_client.agent: Calling LLM with 22 messages. Last message: 
+ModelRequest(parts=[UserPromptPart(content='Yashwardhan Singh Chouhan: Okay, can you', 
+timestamp=datetime.datetime(2026, 6, 13, 8, 14, 8, 854591, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:14:10] WARNING  joinly.controllers.transcription.default: STT utterance latency: 0.775s
+[2026-06-13 08:14:10] INFO     joinly_client.main: Yashwardhan Singh Chouhan: "help me with"
+[2026-06-13 08:14:10] INFO     joinly_client.client: Utterance update: new_transcript text: 'help me with', number of 
+segments: 1
+[2026-06-13 08:14:10] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=False, is_in_conversation_window=True (active=Yashwardhan Singh Chouhan, current=Yashwardhan Singh 
+Chouhan) -> is_triggered=True
+[2026-06-13 08:14:10] INFO     joinly_client.client: Triggered! Calling 1 callbacks
+[2026-06-13 08:14:10] INFO     joinly_client.agent: Calling LLM with 23 messages. Last message: 
+ModelRequest(parts=[UserPromptPart(content='Yashwardhan Singh Chouhan: help me with', 
+timestamp=datetime.datetime(2026, 6, 13, 8, 14, 10, 365965, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:14:11] WARNING  joinly.controllers.transcription.default: STT utterance latency: 0.571s
+[2026-06-13 08:14:11] INFO     joinly_client.main: Yashwardhan Singh Chouhan: "this thing."
+[2026-06-13 08:14:11] INFO     joinly_client.client: Utterance update: new_transcript text: 'this thing.', number of 
+segments: 1
+[2026-06-13 08:14:11] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=False, is_in_conversation_window=True (active=Yashwardhan Singh Chouhan, current=Yashwardhan Singh 
+Chouhan) -> is_triggered=True
+[2026-06-13 08:14:11] INFO     joinly_client.client: Triggered! Calling 1 callbacks
+[2026-06-13 08:14:11] INFO     joinly_client.agent: Calling LLM with 24 messages. Last message: 
+ModelRequest(parts=[UserPromptPart(content='Yashwardhan Singh Chouhan: this thing.', timestamp=datetime.datetime(2026, 
+6, 13, 8, 14, 11, 497537, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:14:14] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='speak_text', args='{"text":"Yes, I can help with that. LetΓÇÖs start with the basicsΓÇöwhat 
+city are you going to, what are your check-in and check-out dates, how many people, and your approximate budget per 
+night?"}', tool_call_id='call_5yyW6vevWvF8bhZyJ8mxM9O2')]. 2606 input tokens and 67 output tokens
+[2026-06-13 08:14:14] INFO     joinly_client.agent: speak_text: text="Yes, I can help with that. LetΓÇÖs start with 
+the basicsΓÇöwhat city are you going to, what are your check-in and check-out dates, how many people, and your 
+approximate budget per night?"
+[2026-06-13 08:14:18] INFO     joinly_client.main: Alex: "Yes, I can help with that."
+[2026-06-13 08:14:18] INFO     joinly_client.main: Alex: "LetΓÇÖs start with the basicsΓÇöwhat city are you going to,"
+[2026-06-13 08:14:21] INFO     joinly_client.main: Alex: "what are your check-in and check-out dates, how many people,"
+[2026-06-13 08:14:23] INFO     joinly_client.agent: speak_text: Finished speaking.
+[2026-06-13 08:14:23] INFO     joinly_client.agent: Calling LLM with 26 messages. Last message: 
+ModelRequest(parts=[ToolReturnPart(tool_name='speak_text', content='Finished speaking.', 
+tool_call_id='call_5yyW6vevWvF8bhZyJ8mxM9O2', timestamp=datetime.datetime(2026, 6, 13, 8, 14, 23, 604538, 
+tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:14:23] INFO     joinly_client.main: Alex: "and your approximate budget per night?"
+[2026-06-13 08:14:26] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='end_turn', args='{}', tool_call_id='call_KIhA7OdQZ9mNLPbtYCaqE92s')]. 2681 input tokens and 
+14 output tokens
+[2026-06-13 08:14:29] WARNING  joinly.controllers.transcription.default: STT utterance latency: 0.865s
+[2026-06-13 08:14:30] INFO     joinly_client.main: Yashwardhan Singh Chouhan: "Yeah, so can you help me with"
+[2026-06-13 08:14:30] INFO     joinly_client.client: Utterance update: new_transcript text: 'Yeah, so can you help me 
+with', number of segments: 1
+[2026-06-13 08:14:30] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=False, is_in_conversation_window=True (active=Yashwardhan Singh Chouhan, current=Yashwardhan Singh 
+Chouhan) -> is_triggered=True
+[2026-06-13 08:14:30] INFO     joinly_client.client: Triggered! Calling 1 callbacks
+[2026-06-13 08:14:30] INFO     joinly_client.agent: Calling LLM with 29 messages. Last message: 
+ModelRequest(parts=[UserPromptPart(content='Yashwardhan Singh Chouhan: Yeah, so can you help me with', 
+timestamp=datetime.datetime(2026, 6, 13, 8, 14, 30, 3832, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:14:31] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='speak_text', args='{"text":"Go aheadΓÇöIΓÇÖm listening. Tell me the details you have so 
+far."}', tool_call_id='call_hGhEs9b2QrZymnsQNuP0yPYL')]. 2726 input tokens and 39 output tokens
+[2026-06-13 08:14:31] INFO     joinly_client.agent: speak_text: text="Go aheadΓÇöIΓÇÖm listening. Tell me the details 
+you have so far."
+[2026-06-13 08:14:33] WARNING  joinly.controllers.transcription.default: STT utterance latency: 0.957s
+[2026-06-13 08:14:33] INFO     joinly_client.main: Yashwardhan Singh Chouhan: "voice agents for customer care."
+[2026-06-13 08:14:33] INFO     joinly_client.client: Utterance update: new_transcript text: 'voice agents for customer 
+care.', number of segments: 1
+[2026-06-13 08:14:33] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=False, is_in_conversation_window=True (active=Yashwardhan Singh Chouhan, current=Yashwardhan Singh 
+Chouhan) -> is_triggered=True
+[2026-06-13 08:14:33] INFO     joinly_client.client: Triggered! Calling 1 callbacks
+[2026-06-13 08:14:33] INFO     joinly_client.agent: Calling LLM with 30 messages. Last message: 
+ModelRequest(parts=[UserPromptPart(content='Yashwardhan Singh Chouhan: voice agents for customer care.', 
+timestamp=datetime.datetime(2026, 6, 13, 8, 14, 33, 800546, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:14:35] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='speak_text', args='{"text":"Got itΓÇöyouΓÇÖre asking about voice agents for customer care. 
+Just to clarify, are you looking to build one for your business, or are you evaluating tools or platforms to use?"}', 
+tool_call_id='call_vNxt81kOudSncIp0uCx792ZQ')]. 2745 input tokens and 60 output tokens
+[2026-06-13 08:14:35] INFO     joinly_client.agent: speak_text: text="Got itΓÇöyouΓÇÖre asking about voice agents for 
+customer care. Just to clarify, are you looking to build one for your business, or are you evaluating tools or 
+platforms to use?"
+[2026-06-13 08:14:37] INFO     joinly_client.main: Alex: "Go aheadΓÇöIΓÇÖm listening. Tell me the details you have so 
+far."
+[2026-06-13 08:14:42] INFO     joinly_client.main: Alex: "Got itΓÇöyouΓÇÖre asking about voice agents for customer 
+care."
+[2026-06-13 08:14:46] INFO     joinly_client.main: Alex: "Just to clarify, are you looking to build one for your 
+business,"
+[2026-06-13 08:14:54] INFO     joinly_client.agent: speak_text: Finished speaking.
+[2026-06-13 08:14:54] INFO     joinly_client.agent: Calling LLM with 32 messages. Last message: 
+ModelRequest(parts=[ToolReturnPart(tool_name='speak_text', content='Finished speaking.', 
+tool_call_id='call_vNxt81kOudSncIp0uCx792ZQ', timestamp=datetime.datetime(2026, 6, 13, 8, 14, 54, 538711, 
+tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:14:54] INFO     joinly_client.main: Alex: "or are you evaluating tools or platforms to use?"
+[2026-06-13 08:14:56] WARNING  joinly.controllers.transcription.default: STT utterance latency: 6.126s
+[2026-06-13 08:14:56] INFO     joinly_client.client: Utterance update: new_transcript text: 'Yeah', number of 
+segments: 1
+[2026-06-13 08:14:56] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=False, is_in_conversation_window=True (active=Yashwardhan Singh Chouhan, current=Yashwardhan Singh 
+Chouhan) -> is_triggered=True
+[2026-06-13 08:14:56] INFO     joinly_client.client: Triggered! Calling 1 callbacks
+[2026-06-13 08:14:56] INFO     joinly_client.agent: Calling LLM with 33 messages. Last message: 
+ModelRequest(parts=[UserPromptPart(content='Yashwardhan Singh Chouhan: Yeah', timestamp=datetime.datetime(2026, 6, 13, 
+8, 14, 56, 342820, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:15:02] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='speak_text', args='{"text":"AlrightΓÇöquick check so I help correctly. Are you building a 
+voice agent yourself, or do you want recommendations for ready-made customer support voice agent platforms?"}', 
+tool_call_id='call_ZTRRo83Sf7XlgVctlRxKrVbe')]. 2827 input tokens and 55 output tokens
+[2026-06-13 08:15:02] INFO     joinly_client.agent: speak_text: text="AlrightΓÇöquick check so I help correctly. Are 
+you building a voice agent yourself, or do you want recommendations for ready-made customer support voice agent 
+platforms?"
+[2026-06-13 08:15:05] INFO     joinly_client.main: Alex: "AlrightΓÇöquick check so I help correctly."
+[2026-06-13 08:15:06] INFO     joinly_client.agent: speak_text: Interrupted by detected speech. Spoken until now: 
+"AlrightΓÇöquick check so I help correctly. Are..."
+[2026-06-13 08:15:06] INFO     joinly_client.main: Alex: "Are..."
+[2026-06-13 08:15:08] WARNING  joinly.controllers.transcription.default: STT utterance latency: 0.938s
+[2026-06-13 08:15:08] INFO     joinly_client.client: Utterance update: new_transcript text: 'Yeah, I need to make some 
+voice agents.', number of segments: 1
+[2026-06-13 08:15:08] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=False, is_in_conversation_window=True (active=Yashwardhan Singh Chouhan, current=Yashwardhan Singh 
+Chouhan) -> is_triggered=True
+[2026-06-13 08:15:08] INFO     joinly_client.client: Triggered! Calling 1 callbacks
+[2026-06-13 08:15:08] INFO     joinly_client.agent: Calling LLM with 36 messages. Last message: 
+ModelRequest(parts=[UserPromptPart(content='Yashwardhan Singh Chouhan: Yeah, I need to make some voice agents.', 
+timestamp=datetime.datetime(2026, 6, 13, 8, 15, 8, 984590, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:15:14] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[TextPart(content='GreatΓÇöthat helps. IΓÇÖll keep this high level and practical.\n\nYou want to **build voice agents 
+for customer care**. HereΓÇÖs the clean way to think about it.\n\nFirst, the **core components** you need:\n- Speech 
+to text to understand the caller\n- A conversational brain to decide what to say\n- Text to speech to respond 
+naturally\n- Telephony to handle calls\n\nSecond, the **recommended modern stack** (production-ready):\n- Telephony: 
+Twilio or Plivo\n- Speech to text: Deepgram or Whisper\n- Conversational logic: an LLM with structured prompts and 
+guardrails\n- Text to speech: ElevenLabs, PlayHT, or Amazon Polly\n- Backend orchestration: Node.js or Python with a 
+state machine\n\nThird, **typical customer care use cases**:\n- Answer FAQs\n- Check order or booking status\n- Create 
+or update tickets\n- Route calls to humans when confidence is low\n- Capture structured data like name, issue, and 
+priority\n\nFourth, **how to design the agent correctly**:\n- Keep conversations short and goal-driven\n- Always 
+confirm critical info\n- Add fallback and escalation rules\n- Log every interaction for review and training\n\nIf you 
+want, I can:\n- Propose a **full architecture diagram**\n- Suggest **exact APIs and sample prompts**\n- Help you 
+design a **real customer care flow** (for example Airbnb-style support)\n- Recommend **no-code vs custom build** based 
+on your team\n\nTell me:\n1) Is this for a startup, enterprise, or personal project?\n2) Do you want inbound calls, 
+outbound calls, or both?\n3) Which country are your customers in?\n\nIΓÇÖll tailor the solution precisely after 
+that.')]. 2931 input tokens and 356 output tokens
+[2026-06-13 08:15:24] WARNING  joinly.providers.browser.devices.virtual_microphone: Missed 19 mic pacing intervals, 
+adjusting next deadline
+[2026-06-13 08:15:26] WARNING  joinly.providers.browser.devices.virtual_microphone: Missed 21 mic pacing intervals, 
+adjusting next deadline
+[2026-06-13 08:15:31] WARNING  joinly.controllers.transcription.default: STT utterance latency: 7.778s
+[2026-06-13 08:15:31] INFO     joinly_client.main: Participant: "Yeah"
+[2026-06-13 08:15:31] INFO     joinly_client.client: Utterance update: new_transcript text: 'Yeah', number of 
+segments: 1
+[2026-06-13 08:15:31] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=False, is_in_conversation_window=False (active=Yashwardhan Singh Chouhan, current=None) -> 
+is_triggered=False
+[2026-06-13 08:15:32] WARNING  joinly.controllers.transcription.default: STT utterance latency: 4.873s
+[2026-06-13 08:15:32] INFO     joinly_client.main: Yashwardhan Singh Chouhan: "Alexa, I need some help with voice."
+[2026-06-13 08:15:32] INFO     joinly_client.client: Utterance update: new_transcript text: 'Yeah Alexa, I need some 
+help with voice.', number of segments: 2
+[2026-06-13 08:15:32] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=False, is_in_conversation_window=True (active=Yashwardhan Singh Chouhan, current=Yashwardhan Singh 
+Chouhan) -> is_triggered=True
+[2026-06-13 08:15:32] INFO     joinly_client.client: Triggered! Calling 1 callbacks
+[2026-06-13 08:15:32] INFO     joinly_client.agent: Calling LLM with 38 messages. Last message: 
+ModelRequest(parts=[UserPromptPart(content='Participant: Yeah', timestamp=datetime.datetime(2026, 6, 13, 8, 15, 32, 
+895287, tzinfo=datetime.timezone.utc)), UserPromptPart(content='Yashwardhan Singh Chouhan: Alexa, I need some help 
+with voice.', timestamp=datetime.datetime(2026, 6, 13, 8, 15, 32, 895293, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:15:33] WARNING  joinly.controllers.transcription.default: STT utterance latency: 3.154s
+[2026-06-13 08:15:33] INFO     joinly_client.main: Yashwardhan Singh Chouhan: "agents for customer care."
+[2026-06-13 08:15:33] INFO     joinly_client.client: Utterance update: new_transcript text: 'agents for customer 
+care.', number of segments: 1
+[2026-06-13 08:15:33] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=False, is_in_conversation_window=True (active=Yashwardhan Singh Chouhan, current=Yashwardhan Singh 
+Chouhan) -> is_triggered=True
+[2026-06-13 08:15:33] INFO     joinly_client.client: Triggered! Calling 1 callbacks
+[2026-06-13 08:15:33] INFO     joinly_client.agent: Calling LLM with 39 messages. Last message: 
+ModelRequest(parts=[UserPromptPart(content='Yashwardhan Singh Chouhan: agents for customer care.', 
+timestamp=datetime.datetime(2026, 6, 13, 8, 15, 33, 649196, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:15:37] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='speak_text', args='{"text":"Got itΓÇöI can help with that. To move forward, tell me three 
+things: is this for a startup or a personal project, do you want inbound customer calls or outbound support calls, and 
+which country your customers are in?"}', tool_call_id='call_apsD7HLyk4NVE7Zh6n8YCxCI')]. 3336 input tokens and 70 
+output tokens
+[2026-06-13 08:15:37] INFO     joinly_client.agent: speak_text: text="Got itΓÇöI can help with that. To move forward, 
+tell me three things: is this for a startup or a personal project, do you want inbound customer calls or outbound 
+support calls, and which country your customers are in?"
+[2026-06-13 08:15:40] INFO     joinly_client.main: Alex: "Got itΓÇöI can help with that."
+[2026-06-13 08:15:41] INFO     joinly_client.main: Alex: "To move forward,"
+[2026-06-13 08:15:57] INFO     joinly_client.main: Alex: "tell me three things: is this for a startup or a personal 
+project,"
+[2026-06-13 08:16:02] INFO     joinly_client.main: Alex: "do you want inbound customer calls or outbound support 
+calls,"
+[2026-06-13 08:16:04] INFO     joinly_client.agent: speak_text: Finished speaking.
+[2026-06-13 08:16:04] INFO     joinly_client.agent: Calling LLM with 41 messages. Last message: 
+ModelRequest(parts=[ToolReturnPart(tool_name='speak_text', content='Finished speaking.', 
+tool_call_id='call_apsD7HLyk4NVE7Zh6n8YCxCI', timestamp=datetime.datetime(2026, 6, 13, 8, 16, 4, 475958, 
+tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:16:04] INFO     joinly_client.main: Alex: "and which country your customers are in?"
+[2026-06-13 08:16:09] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='end_turn', args='{}', tool_call_id='call_0luGqnTTZiHCWXW9nIZkU56y')]. 3414 input tokens and 
+14 output tokens
+[2026-06-13 08:16:13] WARNING  joinly.controllers.transcription.default: STT utterance latency: 0.830s
+[2026-06-13 08:16:13] INFO     joinly_client.main: Yashwardhan Singh Chouhan: "Can you send this meeting 
+transcription?"
+[2026-06-13 08:16:13] INFO     joinly_client.client: Utterance update: new_transcript text: 'Can you send this meeting 
+transcription?', number of segments: 1
+[2026-06-13 08:16:13] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=False, is_in_conversation_window=True (active=Yashwardhan Singh Chouhan, current=Yashwardhan Singh 
+Chouhan) -> is_triggered=True
+[2026-06-13 08:16:13] INFO     joinly_client.client: Triggered! Calling 1 callbacks
+[2026-06-13 08:16:13] INFO     joinly_client.agent: Calling LLM with 44 messages. Last message: 
+ModelRequest(parts=[UserPromptPart(content='Yashwardhan Singh Chouhan: Can you send this meeting transcription?', 
+timestamp=datetime.datetime(2026, 6, 13, 8, 16, 13, 476892, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:16:18] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='get_transcript', args='{"mode":"full"}', tool_call_id='call_diRbdVxvWUBBQO2839Zlqc3Q')]. 3458 
+input tokens and 89 output tokens
+[2026-06-13 08:16:18] INFO     joinly_client.agent: get_transcript: mode="full"
+[2026-06-13 08:16:18] WARNING  joinly.providers.browser.devices.virtual_microphone: Missed 16 mic pacing intervals, 
+adjusting next deadline
+[2026-06-13 08:16:18] INFO     joinly_client.agent: get_transcript: {'segments': [{'text': 'Like', 'start': 20.704, 
+'end': 22.144, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'legs', 'start': 34.368, 
+'end': 35.904, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'Yeah Alex, can you hear me?', 
+'start': 40.544, 'end': 43.232, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'Yeah, 
+like.', 'start': 46.304, 'end': 47.616, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'Yes, 
+I can hear you clearly.', 'start': 49.216, 'end': 50.848, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 'Yes, I 
+can hear you clearly.', 'start': 52.416, 'end': 54.592, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 'Hey Alex, 
+can you help me with something?', 'start': 57.888, 'end': 60.032, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 
+'participant'}, {'text': 'Of courseΓÇöwhat do you need help with?', 'start': 65.76, 'end': 68.416, 'speaker': 'Alex', 
+'role': 'assistant'}, {'text': 'Yeah, I need some help with Airbnb booking.', 'start': 74.176, 'end': 77.824, 
+'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'SureΓÇöwhat specifically do you need help 
+with for the Airbnb booking?', 'start': 84.32, 'end': 87.616, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 'Hmm', 
+'start': 91.264, 'end': 91.936, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'Can you book 
+a Airbnb for me?', 'start': 92.64, 'end': 94.912, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, 
+{'text': 'No rushΓÇöare you trying to book a place, change a reservation, or resolve an issue with a host?', 'start': 
+96.608, 'end': 102.624, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 'I canΓÇÖt book it on your behalf,', 
+'start': 104.0, 'end': 105.856, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 'Okay', 'start': 105.568, 'end': 
+106.336, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'but I can guide you step by step or 
+help you choose the right listingΓÇödo you want help finding options or walking through the booking process?', 
+'start': 106.976, 'end': 115.84, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 'I canΓÇÖt...', 'start': 117.28, 
+'end': 119.616, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 'Okay, can you help me with this thing.', 'start': 
+118.528, 'end': 123.648, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'Yes, I can help 
+with that. LetΓÇÖs start with the basicsΓÇöwhat city are you going to, what are your check-in and check-out dates, how 
+many people, and your approximate budget per night?', 'start': 128.96, 'end': 139.04, 'speaker': 'Alex', 'role': 
+'assistant'}, {'text': 'Yeah, so can you help me with voice agents for customer care.', 'start': 141.888, 'end': 
+148.224, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'Go aheadΓÇöIΓÇÖm listening. Tell me 
+the details you have so far.', 'start': 149.472, 'end': 152.608, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 
+'Got itΓÇöyouΓÇÖre asking about voice agents for customer care. Just to clarify, are you looking to build one for your 
+business,', 'start': 154.88, 'end': 161.44, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 'Yeah', 'start': 
+167.648, 'end': 168.512, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'or are you 
+evaluating tools or platforms to use?', 'start': 170.144, 'end': 172.832, 'speaker': 'Alex', 'role': 'assistant'}, 
+{'text': 'AlrightΓÇöquick check so I help correctly.', 'start': 182.176, 'end': 183.968, 'speaker': 'Alex', 'role': 
+'assistant'}, {'text': 'Yeah, I need to make some voice agents.', 'start': 183.552, 'end': 186.336, 'speaker': 
+'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'Are...', 'start': 184.0, 'end': 184.576, 'speaker': 
+'Alex', 'role': 'assistant'}, {'text': 'Yeah', 'start': 204.16, 'end': 205.216, 'speaker': None, 'role': 
+'participant'}, {'text': 'Alexa, I need some help with voice. agents for customer care.', 'start': 205.6, 'end': 
+211.2, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'Got itΓÇöI can help with that. To 
+move forward,', 'start': 219.488, 'end': 222.336, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 'tell me three 
+things: is this for a startup or a personal project,', 'start': 237.344, 'end': 240.832, 'speaker': 'Alex', 'role': 
+'assistant'}, {'text': 'do you want inbound customer calls or outbound support calls, and which country your customers 
+are in?', 'start': 242.4, 'end': 248.032, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 'Can you send this meeting 
+transcription?', 'start': 256.544, 'end': 258.88, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}]}
+[2026-06-13 08:16:18] INFO     joinly_client.agent: Calling LLM with 46 messages. Last message: 
+ModelRequest(parts=[ToolReturnPart(tool_name='get_transcript', content={'segments': [{'text': 'Like', 'start': 20.704, 
+'end': 22.144, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'legs', 'start': 34.368, 
+'end': 35.904, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'Yeah Alex, can you hear me?', 
+'start': 40.544, 'end': 43.232, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'Yeah, 
+like.', 'start': 46.304, 'end': 47.616, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'Yes, 
+I can hear you clearly.', 'start': 49.216, 'end': 50.848, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 'Yes, I 
+can hear you clearly.', 'start': 52.416, 'end': 54.592, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 'Hey Alex, 
+can you help me with something?', 'start': 57.888, 'end': 60.032, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 
+'participant'}, {'text': 'Of courseΓÇöwhat do you need help with?', 'start': 65.76, 'end': 68.416, 'speaker': 'Alex', 
+'role': 'assistant'}, {'text': 'Yeah, I need some help with Airbnb booking.', 'start': 74.176, 'end': 77.824, 
+'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'SureΓÇöwhat specifically do you need help 
+with for the Airbnb booking?', 'start': 84.32, 'end': 87.616, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 'Hmm', 
+'start': 91.264, 'end': 91.936, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'Can you book 
+a Airbnb for me?', 'start': 92.64, 'end': 94.912, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, 
+{'text': 'No rushΓÇöare you trying to book a place, change a reservation, or resolve an issue with a host?', 'start': 
+96.608, 'end': 102.624, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 'I canΓÇÖt book it on your behalf,', 
+'start': 104.0, 'end': 105.856, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 'Okay', 'start': 105.568, 'end': 
+106.336, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'but I can guide you step by step or 
+help you choose the right listingΓÇödo you want help finding options or walking through the booking process?', 
+'start': 106.976, 'end': 115.84, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 'I canΓÇÖt...', 'start': 117.28, 
+'end': 119.616, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 'Okay, can you help me with this thing.', 'start': 
+118.528, 'end': 123.648, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'Yes, I can help 
+with that. LetΓÇÖs start with the basicsΓÇöwhat city are you going to, what are your check-in and check-out dates, how 
+many people, and your approximate budget per night?', 'start': 128.96, 'end': 139.04, 'speaker': 'Alex', 'role': 
+'assistant'}, {'text': 'Yeah, so can you help me with voice agents for customer care.', 'start': 141.888, 'end': 
+148.224, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'Go aheadΓÇöIΓÇÖm listening. Tell me 
+the details you have so far.', 'start': 149.472, 'end': 152.608, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 
+'Got itΓÇöyouΓÇÖre asking about voice agents for customer care. Just to clarify, are you looking to build one for your 
+business,', 'start': 154.88, 'end': 161.44, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 'Yeah', 'start': 
+167.648, 'end': 168.512, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'or are you 
+evaluating tools or platforms to use?', 'start': 170.144, 'end': 172.832, 'speaker': 'Alex', 'role': 'assistant'}, 
+{'text': 'AlrightΓÇöquick check so I help correctly.', 'start': 182.176, 'end': 183.968, 'speaker': 'Alex', 'role': 
+'assistant'}, {'text': 'Yeah, I need to make some voice agents.', 'start': 183.552, 'end': 186.336, 'speaker': 
+'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'Are...', 'start': 184.0, 'end': 184.576, 'speaker': 
+'Alex', 'role': 'assistant'}, {'text': 'Yeah', 'start': 204.16, 'end': 205.216, 'speaker': None, 'role': 
+'participant'}, {'text': 'Alexa, I need some help with voice. agents for customer care.', 'start': 205.6, 'end': 
+211.2, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}, {'text': 'Got itΓÇöI can help with that. To 
+move forward,', 'start': 219.488, 'end': 222.336, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 'tell me three 
+things: is this for a startup or a personal project,', 'start': 237.344, 'end': 240.832, 'speaker': 'Alex', 'role': 
+'assistant'}, {'text': 'do you want inbound customer calls or outbound support calls, and which country your customers 
+are in?', 'start': 242.4, 'end': 248.032, 'speaker': 'Alex', 'role': 'assistant'}, {'text': 'Can you send this meeting 
+transcription?', 'start': 256.544, 'end': 258.88, 'speaker': 'Yashwardhan Singh Chouhan', 'role': 'participant'}]}, 
+tool_call_id='call_diRbdVxvWUBBQO2839Zlqc3Q', timestamp=datetime.datetime(2026, 6, 13, 8, 16, 18, 929611, 
+tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:16:19] WARNING  joinly.providers.browser.devices.virtual_microphone: Missed 10 mic pacing intervals, 
+adjusting next deadline
+[2026-06-13 08:16:20] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='speak_text', args='{"text":"IΓÇÖm going to post the full meeting transcript in the chat 
+now."}', tool_call_id='call_p29CnsmJZaRy1hXNB601yXug')]. 4704 input tokens and 38 output tokens
+[2026-06-13 08:16:20] INFO     joinly_client.agent: speak_text: text="IΓÇÖm going to post the full meeting transcript 
+in the chat now."
+[2026-06-13 08:16:26] INFO     joinly_client.agent: speak_text: Finished speaking.
+[2026-06-13 08:16:26] INFO     joinly_client.agent: Calling LLM with 48 messages. Last message: 
+ModelRequest(parts=[ToolReturnPart(tool_name='speak_text', content='Finished speaking.', 
+tool_call_id='call_p29CnsmJZaRy1hXNB601yXug', timestamp=datetime.datetime(2026, 6, 13, 8, 16, 26, 606134, 
+tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:16:26] INFO     joinly_client.main: Alex: "IΓÇÖm going to post the full meeting transcript in the chat 
+now."
+[2026-06-13 08:16:32] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='send_chat_message', args='{"message":"- Yashwardhan Singh Chouhan: Like\\n- Yashwardhan Singh 
+Chouhan: legs\\n- Yashwardhan Singh Chouhan: Yeah Alex, can you hear me?\\n- Yashwardhan Singh Chouhan: Yeah, 
+like.\\n- Alex: Yes, I can hear you clearly.\\n- Yashwardhan Singh Chouhan: Hey Alex, can you help me with 
+something?\\n- Alex: Of courseΓÇöwhat do you need help with?\\n- Yashwardhan Singh Chouhan: Yeah, I need some help 
+with Airbnb booking.\\n- Alex: SureΓÇöwhat specifically do you need help with for the Airbnb booking?\\n- Yashwardhan 
+Singh Chouhan: Hmm\\n- Yashwardhan Singh Chouhan: Can you book a Airbnb for me?\\n- Alex: I canΓÇÖt book it on your 
+behalf, but I can guide you step by step or help you choose the right listing.\\n- Yashwardhan Singh Chouhan: Okay\\n- 
+Yashwardhan Singh Chouhan: Okay, can you help me with this thing.\\n- Alex: Yes, I can help with that. LetΓÇÖs start 
+with the basics.\\n- Yashwardhan Singh Chouhan: Yeah, so can you help me with voice agents for customer care.\\n- 
+Alex: Got itΓÇöyouΓÇÖre asking about voice agents for customer care. Are you looking to build one or evaluate 
+tools?\\n- Yashwardhan Singh Chouhan: Yeah\\n- Yashwardhan Singh Chouhan: Yeah, I need to make some voice agents.\\n- 
+Participant: Yeah\\n- Yashwardhan Singh Chouhan: Alexa, I need some help with voice agents for customer care.\\n- 
+Alex: Got itΓÇöI can help with that. I asked whether this is for a startup or personal project, inbound or outbound 
+calls, and which country your customers are in."}', tool_call_id='call_cCCuRgD2fPIqVZHREn28eoT8')]. 4750 input tokens 
+and 429 output tokens
+[2026-06-13 08:16:32] INFO     joinly_client.agent: send_chat_message: message="- Yashwardhan Singh Chouhan: Like
+- Yashwardhan Singh Chouhan: legs
+- Yashwardhan Singh Chouhan: Yeah Alex, can you hear me?
+- Yashwardhan Singh Chouhan: Yeah, like.
+- Alex: Yes, I can hear you clearly.
+- Yashwardhan Singh Chouhan: Hey Alex, can you help me with something?
+- Alex: Of courseΓÇöwhat do you need help with?
+- Yashwardhan Singh Chouhan: Yeah, I need some help with Airbnb booking.
+- Alex: SureΓÇöwhat specifically do you need help with for the Airbnb booking?
+- Yashwardhan Singh Chouhan: Hmm
+- Yashwardhan Singh Chouhan: Can you book a Airbnb for me?
+- Alex: I canΓÇÖt book it on your behalf, but I can guide you step by step or help you choose the right listing.
+- Yashwardhan Singh Chouhan: Okay
+- Yashwardhan Singh Chouhan: Okay, can you help me with this thing.
+- Alex: Yes, I can help with that. LetΓÇÖs start with the basics.
+- Yashwardhan Singh Chouhan: Yeah, so can you help me with voice agents for customer care.
+- Alex: Got itΓÇöyouΓÇÖre asking about voice agents for customer care. Are you looking to build one or evaluate tools?
+- Yashwardhan Singh Chouhan: Yeah
+- Yashwardhan Singh Chouhan: Yeah, I need to make some voice agents.
+- Participant: Yeah
+- Yashwardhan Singh Chouhan: Alexa, I need some help with voice agents for customer care.
+- Alex: Got itΓÇöI can help with that. I asked whether this is for a startup or personal project, inbound or outbound 
+calls, and which country your customers are in."
+[2026-06-13 08:16:36] INFO     joinly.providers.browser.meeting_provider: Successfully performed 'send_chat_message'.
+[2026-06-13 08:16:36] INFO     joinly_client.agent: send_chat_message: Sent message.
+[2026-06-13 08:16:36] INFO     joinly_client.agent: Calling LLM with 50 messages. Last message: 
+ModelRequest(parts=[ToolReturnPart(tool_name='send_chat_message', content='Sent message.', 
+tool_call_id='call_cCCuRgD2fPIqVZHREn28eoT8', timestamp=datetime.datetime(2026, 6, 13, 8, 16, 36, 980566, 
+tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:16:37] WARNING  joinly.providers.browser.devices.virtual_microphone: Missed 11 mic pacing intervals, 
+adjusting next deadline
+[2026-06-13 08:16:38] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='end_turn', args='{}', tool_call_id='call_0aOSnhPce3dKxU3GzrI8TUdC')]. 5187 input tokens and 
+14 output tokens
+[2026-06-13 08:16:39] WARNING  joinly.providers.browser.devices.virtual_microphone: Missed 18 mic pacing intervals, 
+adjusting next deadline
+[2026-06-13 08:17:02] WARNING  joinly.controllers.transcription.default: STT utterance latency: 10.694s
+[2026-06-13 08:17:02] INFO     joinly_client.main: Yashwardhan Singh Chouhan: "Yeah, hey Alex, can you give me some 
+insights on today's meeting?"
+[2026-06-13 08:17:02] INFO     joinly_client.client: Utterance update: new_transcript text: 'Yeah, hey Alex, can you 
+give me some insights on today's meeting?', number of segments: 1
+[2026-06-13 08:17:02] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=True, is_in_conversation_window=True (active=Yashwardhan Singh Chouhan, current=Yashwardhan Singh 
+Chouhan) -> is_triggered=True
+[2026-06-13 08:17:02] INFO     joinly_client.client: Triggered! Calling 1 callbacks
+[2026-06-13 08:17:02] INFO     joinly_client.agent: Calling LLM with 53 messages. Last message: 
+ModelRequest(parts=[UserPromptPart(content="Yashwardhan Singh Chouhan: Yeah, hey Alex, can you give me some insights 
+on today's meeting?", timestamp=datetime.datetime(2026, 6, 13, 8, 17, 2, 893734, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:17:04] WARNING  joinly.controllers.transcription.default: STT utterance latency: 3.269s
+[2026-06-13 08:17:04] INFO     joinly_client.main: Yashwardhan Singh Chouhan: "Yeah, let's, can you give me some?"
+[2026-06-13 08:17:04] INFO     joinly_client.client: Utterance update: new_transcript text: 'Yeah, let's, can you give 
+me some?', number of segments: 1
+[2026-06-13 08:17:04] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=False, is_in_conversation_window=True (active=Yashwardhan Singh Chouhan, current=Yashwardhan Singh 
+Chouhan) -> is_triggered=True
+[2026-06-13 08:17:04] INFO     joinly_client.client: Triggered! Calling 1 callbacks
+[2026-06-13 08:17:04] INFO     joinly_client.agent: Calling LLM with 54 messages. Last message: 
+ModelRequest(parts=[UserPromptPart(content="Yashwardhan Singh Chouhan: Yeah, let's, can you give me some?", 
+timestamp=datetime.datetime(2026, 6, 13, 8, 17, 4, 367440, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:17:06] WARNING  joinly.controllers.transcription.default: STT utterance latency: 5.915s
+[2026-06-13 08:17:06] INFO     joinly_client.main: Yashwardhan Singh Chouhan: "insights on today's meeting."
+[2026-06-13 08:17:06] INFO     joinly_client.client: Utterance update: new_transcript text: 'insights on today's 
+meeting.', number of segments: 1
+[2026-06-13 08:17:06] INFO     joinly_client.client: Name trigger check: self.name_trigger=True, self.name='Alex', 
+is_name_mentioned=False, is_in_conversation_window=True (active=Yashwardhan Singh Chouhan, current=Yashwardhan Singh 
+Chouhan) -> is_triggered=True
+[2026-06-13 08:17:06] INFO     joinly_client.client: Triggered! Calling 1 callbacks
+[2026-06-13 08:17:06] INFO     joinly_client.agent: Calling LLM with 55 messages. Last message: 
+ModelRequest(parts=[UserPromptPart(content="Yashwardhan Singh Chouhan: insights on today's meeting.", 
+timestamp=datetime.datetime(2026, 6, 13, 8, 17, 6, 175310, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:17:22] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='speak_text', args='{"text":"IΓÇÖll summarize todayΓÇÖs meeting and highlight key insights and 
+next steps."}', tool_call_id='call_NNMzB4KA1Pre9eMOpe2y5ZUI')]. 4647 input tokens and 38 output tokens
+[2026-06-13 08:17:22] INFO     joinly_client.agent: speak_text: text="IΓÇÖll summarize todayΓÇÖs meeting and highlight 
+key insights and next steps."
+[2026-06-13 08:17:28] INFO     joinly_client.agent: speak_text: Finished speaking.
+[2026-06-13 08:17:28] INFO     joinly_client.agent: Calling LLM with 57 messages. Last message: 
+ModelRequest(parts=[ToolReturnPart(tool_name='speak_text', content='Finished speaking.', 
+tool_call_id='call_NNMzB4KA1Pre9eMOpe2y5ZUI', timestamp=datetime.datetime(2026, 6, 13, 8, 17, 28, 520764, 
+tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:17:28] INFO     joinly_client.main: Alex: "IΓÇÖll summarize todayΓÇÖs meeting and highlight key 
+insights and next steps."
+[2026-06-13 08:17:43] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='send_chat_message', args='{"message":"- Main topic clarified: The discussion shifted from 
+Airbnb booking help to building voice agents for customer care.\\n- Key insight: YouΓÇÖre interested in creating your 
+own voice-based customer support agents, not just using an existing assistant.\\n- Open questions to resolve: whether 
+this is for a startup or personal project, inbound versus outbound calls, and the target customer country.\\n- 
+Technical direction discussed: modern voice agent stack including telephony, speech-to-text, conversational logic, and 
+text-to-speech.\\n- No decisions finalized yet: requirements are still being gathered.\\n- Next steps: define use 
+cases, confirm deployment scope, and choose between no-code tools versus a custom build."}', 
+tool_call_id='call_u3NWFakLAyW0xvkZY1I6IC96')]. 4693 input tokens and 155 output tokens
+[2026-06-13 08:17:43] INFO     joinly_client.agent: send_chat_message: message="- Main topic clarified: The discussion 
+shifted from Airbnb booking help to building voice agents for customer care.
+- Key insight: YouΓÇÖre interested in creating your own voice-based customer support agents, not just using an 
+existing assistant.
+- Open questions to resolve: whether this is for a startup or personal project, inbound versus outbound calls, and the 
+target customer country.
+- Technical direction discussed: modern voice agent stack including telephony, speech-to-text, conversational logic, 
+and text-to-speech.
+- No decisions finalized yet: requirements are still being gathered.
+- Next steps: define use cases, confirm deployment scope, and choose between no-code tools versus a custom build."
+[2026-06-13 08:17:43] ERROR    joinly.providers.browser.meeting_provider: Failed to perform 'send_chat_message'.
+Traceback (most recent call last):
+  File "/app/.venv/lib/python3.12/site-packages/joinly/providers/browser/meeting_provider.py", line 201, in 
+_action_guard
+    yield self._page, self._platform_controller
+  File "/app/.venv/lib/python3.12/site-packages/joinly/providers/browser/meeting_provider.py", line 318, in 
+send_chat_message
+    await controller.send_chat_message(page, message)
+  File "/app/.venv/lib/python3.12/site-packages/joinly/providers/browser/platforms/teams.py", line 182, in 
+send_chat_message
+    await self._open_chat(page)
+  File "/app/.venv/lib/python3.12/site-packages/joinly/providers/browser/platforms/teams.py", line 388, in _open_chat
+    raise RuntimeError(msg)
+RuntimeError: Chat button not found or not visible.
+[06/13/26 08:17:43] ERROR    Error calling tool              tool_manager.py:193
+                             'send_chat_message'                                
+                             Γò¡ΓöÇ Traceback (most recent calΓöÇΓò«                    
+                             Γöé /app/.venv/lib/python3.12/s Γöé                    
+                             Γöé ite-packages/fastmcp/tools/ Γöé                    
+                             Γöé tool_manager.py:184 in      Γöé                    
+                             Γöé call_tool                   Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé   181 Γöé   Γöé   Γöé   Γöé   raise Γöé                    
+                             Γöé   182 Γöé   Γöé   Γöé             Γöé                    
+                             Γöé   183 Γöé   Γöé   Γöé   try:      Γöé                    
+                             Γöé Γ¥▒ 184 Γöé   Γöé   Γöé   Γöé   retur Γöé                    
+                             Γöé   185 Γöé   Γöé   Γöé             Γöé                    
+                             Γöé   186 Γöé   Γöé   Γöé   # raise T Γöé                    
+                             Γöé   187 Γöé   Γöé   Γöé   except To Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé /app/.venv/lib/python3.12/s Γöé                    
+                             Γöé ite-packages/fastmcp/tools/ Γöé                    
+                             Γöé tool.py:276 in run          Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé   273 Γöé   Γöé   result = type Γöé                    
+                             Γöé   274 Γöé   Γöé                 Γöé                    
+                             Γöé   275 Γöé   Γöé   if inspect.is Γöé                    
+                             Γöé Γ¥▒ 276 Γöé   Γöé   Γöé   result =  Γöé                    
+                             Γöé   277 Γöé   Γöé                 Γöé                    
+                             Γöé   278 Γöé   Γöé   if isinstance Γöé                    
+                             Γöé   279 Γöé   Γöé   Γöé   return re Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé /app/.venv/lib/python3.12/s Γöé                    
+                             Γöé ite-packages/joinly/server. Γöé                    
+                             Γöé py:262 in send_chat_message Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé   259 ) -> str:             Γöé                    
+                             Γöé   260 Γöé   """Send a chat me Γöé                    
+                             Γöé   261 Γöé   ms: MeetingSessio Γöé                    
+                             Γöé Γ¥▒ 262 Γöé   await ms.send_cha Γöé                    
+                             Γöé   263 Γöé   return "Sent mess Γöé                    
+                             Γöé   264                       Γöé                    
+                             Γöé   265                       Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé /app/.venv/lib/python3.12/s Γöé                    
+                             Γöé ite-packages/joinly/session Γöé                    
+                             Γöé .py:149 in                  Γöé                    
+                             Γöé send_chat_message           Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé   146 Γöé   Γöé   Γöé   message ( Γöé                    
+                             Γöé   147 Γöé   Γöé   """           Γöé                    
+                             Γöé   148 Γöé   Γöé   async with se Γöé                    
+                             Γöé Γ¥▒ 149 Γöé   Γöé   Γöé   await sel Γöé                    
+                             Γöé   150 Γöé                     Γöé                    
+                             Γöé   151 Γöé   async def get_cha Γöé                    
+                             Γöé   152 Γöé   Γöé   """Get the ch Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé /app/.venv/lib/python3.12/s Γöé                    
+                             Γöé ite-packages/joinly/provide Γöé                    
+                             Γöé rs/browser/meeting_provider Γöé                    
+                             Γöé .py:317 in                  Γöé                    
+                             Γöé send_chat_message           Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé   314 Γöé   Γöé   Args:         Γöé                    
+                             Γöé   315 Γöé   Γöé   Γöé   message:  Γöé                    
+                             Γöé   316 Γöé   Γöé   """           Γöé                    
+                             Γöé Γ¥▒ 317 Γöé   Γöé   async with se Γöé                    
+                             Γöé   318 Γöé   Γöé   Γöé   await con Γöé                    
+                             Γöé   319 Γöé                     Γöé                    
+                             Γöé   320 Γöé   async def get_cha Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé /usr/local/lib/python3.12/c Γöé                    
+                             Γöé ontextlib.py:231 in         Γöé                    
+                             Γöé __aexit__                   Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé   228 Γöé   Γöé   Γöé   Γöé   # tel Γöé                    
+                             Γöé   229 Γöé   Γöé   Γöé   Γöé   value Γöé                    
+                             Γöé   230 Γöé   Γöé   Γöé   try:      Γöé                    
+                             Γöé Γ¥▒ 231 Γöé   Γöé   Γöé   Γöé   await Γöé                    
+                             Γöé   232 Γöé   Γöé   Γöé   except St Γöé                    
+                             Γöé   233 Γöé   Γöé   Γöé   Γöé   # Sup Γöé                    
+                             Γöé   234 Γöé   Γöé   Γöé   Γöé   # was Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé /app/.venv/lib/python3.12/s Γöé                    
+                             Γöé ite-packages/joinly/provide Γöé                    
+                             Γöé rs/browser/meeting_provider Γöé                    
+                             Γöé .py:207 in _action_guard    Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé   204 Γöé   Γöé   Γöé   Γöé   logge Γöé                    
+                             Γöé   205 Γöé   Γöé   Γöé   Γöé   if is Γöé                    
+                             Γöé   206 Γöé   Γöé   Γöé   Γöé   Γöé   r Γöé                    
+                             Γöé Γ¥▒ 207 Γöé   Γöé   Γöé   Γöé   raise Γöé                    
+                             Γöé   208 Γöé   Γöé   Γöé   else:     Γöé                    
+                             Γöé   209 Γöé   Γöé   Γöé   Γöé   logge Γöé                    
+                             Γöé   210                       Γöé                    
+                             
+Γò░ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓò»                    
+                             RuntimeError: Failed to perform                    
+                             'send_chat_message'.                               
+[2026-06-13 08:17:43] INFO     joinly_client.agent: send_chat_message: [error] Error calling tool 'send_chat_message': 
+Failed to perform 'send_chat_message'.
+[2026-06-13 08:17:43] INFO     joinly_client.agent: Calling LLM with 59 messages. Last message: 
+ModelRequest(parts=[ToolReturnPart(tool_name='send_chat_message', content="[error] Error calling tool 
+'send_chat_message': Failed to perform 'send_chat_message'.", tool_call_id='call_u3NWFakLAyW0xvkZY1I6IC96', 
+timestamp=datetime.datetime(2026, 6, 13, 8, 17, 43, 745932, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:17:46] INFO     joinly_client.agent: LLM response received with 1 parts: 
+[ToolCallPart(tool_name='send_chat_message', args='{"message":"- Main topic clarified: The discussion shifted from 
+Airbnb booking help to building voice agents for customer care.\\n- Key insight: You want to create your own 
+voice-based customer support agents, not just use an existing assistant.\\n- Open questions: startup vs personal 
+project, inbound or outbound calls, and which country your customers are in.\\n- Technical direction mentioned: a 
+voice agent stack using telephony, speech-to-text, conversational logic, and text-to-speech.\\n- Status: no final 
+decisions yet; this was a discovery and scoping conversation.\\n- Recommended next steps: confirm requirements, define 
+customer care use cases, and decide between no-code tools or a custom build."}', 
+tool_call_id='call_pKc2NwENjvl90G90gjdFmWYs')]. 4878 input tokens and 156 output tokens
+[2026-06-13 08:17:46] INFO     joinly_client.agent: send_chat_message: message="- Main topic clarified: The discussion 
+shifted from Airbnb booking help to building voice agents for customer care.
+- Key insight: You want to create your own voice-based customer support agents, not just use an existing assistant.
+- Open questions: startup vs personal project, inbound or outbound calls, and which country your customers are in.
+- Technical direction mentioned: a voice agent stack using telephony, speech-to-text, conversational logic, and 
+text-to-speech.
+- Status: no final decisions yet; this was a discovery and scoping conversation.
+- Recommended next steps: confirm requirements, define customer care use cases, and decide between no-code tools or a 
+custom build."
+[2026-06-13 08:17:46] ERROR    joinly.providers.browser.meeting_provider: Failed to perform 'send_chat_message'.
+Traceback (most recent call last):
+  File "/app/.venv/lib/python3.12/site-packages/joinly/providers/browser/meeting_provider.py", line 201, in 
+_action_guard
+    yield self._page, self._platform_controller
+  File "/app/.venv/lib/python3.12/site-packages/joinly/providers/browser/meeting_provider.py", line 318, in 
+send_chat_message
+    await controller.send_chat_message(page, message)
+  File "/app/.venv/lib/python3.12/site-packages/joinly/providers/browser/platforms/teams.py", line 182, in 
+send_chat_message
+    await self._open_chat(page)
+  File "/app/.venv/lib/python3.12/site-packages/joinly/providers/browser/platforms/teams.py", line 388, in _open_chat
+    raise RuntimeError(msg)
+RuntimeError: Chat button not found or not visible.
+[06/13/26 08:17:46] ERROR    Error calling tool              tool_manager.py:193
+                             'send_chat_message'                                
+                             Γò¡ΓöÇ Traceback (most recent calΓöÇΓò«                    
+                             Γöé /app/.venv/lib/python3.12/s Γöé                    
+                             Γöé ite-packages/fastmcp/tools/ Γöé                    
+                             Γöé tool_manager.py:184 in      Γöé                    
+                             Γöé call_tool                   Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé   181 Γöé   Γöé   Γöé   Γöé   raise Γöé                    
+                             Γöé   182 Γöé   Γöé   Γöé             Γöé                    
+                             Γöé   183 Γöé   Γöé   Γöé   try:      Γöé                    
+                             Γöé Γ¥▒ 184 Γöé   Γöé   Γöé   Γöé   retur Γöé                    
+                             Γöé   185 Γöé   Γöé   Γöé             Γöé                    
+                             Γöé   186 Γöé   Γöé   Γöé   # raise T Γöé                    
+                             Γöé   187 Γöé   Γöé   Γöé   except To Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé /app/.venv/lib/python3.12/s Γöé                    
+                             Γöé ite-packages/fastmcp/tools/ Γöé                    
+                             Γöé tool.py:276 in run          Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé   273 Γöé   Γöé   result = type Γöé                    
+                             Γöé   274 Γöé   Γöé                 Γöé                    
+                             Γöé   275 Γöé   Γöé   if inspect.is Γöé                    
+                             Γöé Γ¥▒ 276 Γöé   Γöé   Γöé   result =  Γöé                    
+                             Γöé   277 Γöé   Γöé                 Γöé                    
+                             Γöé   278 Γöé   Γöé   if isinstance Γöé                    
+                             Γöé   279 Γöé   Γöé   Γöé   return re Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé /app/.venv/lib/python3.12/s Γöé                    
+                             Γöé ite-packages/joinly/server. Γöé                    
+                             Γöé py:262 in send_chat_message Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé   259 ) -> str:             Γöé                    
+                             Γöé   260 Γöé   """Send a chat me Γöé                    
+                             Γöé   261 Γöé   ms: MeetingSessio Γöé                    
+                             Γöé Γ¥▒ 262 Γöé   await ms.send_cha Γöé                    
+                             Γöé   263 Γöé   return "Sent mess Γöé                    
+                             Γöé   264                       Γöé                    
+                             Γöé   265                       Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé /app/.venv/lib/python3.12/s Γöé                    
+                             Γöé ite-packages/joinly/session Γöé                    
+                             Γöé .py:149 in                  Γöé                    
+                             Γöé send_chat_message           Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé   146 Γöé   Γöé   Γöé   message ( Γöé                    
+                             Γöé   147 Γöé   Γöé   """           Γöé                    
+                             Γöé   148 Γöé   Γöé   async with se Γöé                    
+                             Γöé Γ¥▒ 149 Γöé   Γöé   Γöé   await sel Γöé                    
+                             Γöé   150 Γöé                     Γöé                    
+                             Γöé   151 Γöé   async def get_cha Γöé                    
+                             Γöé   152 Γöé   Γöé   """Get the ch Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé /app/.venv/lib/python3.12/s Γöé                    
+                             Γöé ite-packages/joinly/provide Γöé                    
+                             Γöé rs/browser/meeting_provider Γöé                    
+                             Γöé .py:317 in                  Γöé                    
+                             Γöé send_chat_message           Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé   314 Γöé   Γöé   Args:         Γöé                    
+                             Γöé   315 Γöé   Γöé   Γöé   message:  Γöé                    
+                             Γöé   316 Γöé   Γöé   """           Γöé                    
+                             Γöé Γ¥▒ 317 Γöé   Γöé   async with se Γöé                    
+                             Γöé   318 Γöé   Γöé   Γöé   await con Γöé                    
+                             Γöé   319 Γöé                     Γöé                    
+                             Γöé   320 Γöé   async def get_cha Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé /usr/local/lib/python3.12/c Γöé                    
+                             Γöé ontextlib.py:231 in         Γöé                    
+                             Γöé __aexit__                   Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé   228 Γöé   Γöé   Γöé   Γöé   # tel Γöé                    
+                             Γöé   229 Γöé   Γöé   Γöé   Γöé   value Γöé                    
+                             Γöé   230 Γöé   Γöé   Γöé   try:      Γöé                    
+                             Γöé Γ¥▒ 231 Γöé   Γöé   Γöé   Γöé   await Γöé                    
+                             Γöé   232 Γöé   Γöé   Γöé   except St Γöé                    
+                             Γöé   233 Γöé   Γöé   Γöé   Γöé   # Sup Γöé                    
+                             Γöé   234 Γöé   Γöé   Γöé   Γöé   # was Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé /app/.venv/lib/python3.12/s Γöé                    
+                             Γöé ite-packages/joinly/provide Γöé                    
+                             Γöé rs/browser/meeting_provider Γöé                    
+                             Γöé .py:207 in _action_guard    Γöé                    
+                             Γöé                             Γöé                    
+                             Γöé   204 Γöé   Γöé   Γöé   Γöé   logge Γöé                    
+                             Γöé   205 Γöé   Γöé   Γöé   Γöé   if is Γöé                    
+                             Γöé   206 Γöé   Γöé   Γöé   Γöé   Γöé   r Γöé                    
+                             Γöé Γ¥▒ 207 Γöé   Γöé   Γöé   Γöé   raise Γöé                    
+                             Γöé   208 Γöé   Γöé   Γöé   else:     Γöé                    
+                             Γöé   209 Γöé   Γöé   Γöé   Γöé   logge Γöé                    
+                             Γöé   210                       Γöé                    
+                             
+Γò░ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓò»                    
+                             RuntimeError: Failed to perform                    
+                             'send_chat_message'.                               
+[2026-06-13 08:17:46] INFO     joinly_client.agent: send_chat_message: [error] Error calling tool 'send_chat_message': 
+Failed to perform 'send_chat_message'.
+[2026-06-13 08:17:46] INFO     joinly_client.agent: Calling LLM with 61 messages. Last message: 
+ModelRequest(parts=[ToolReturnPart(tool_name='send_chat_message', content="[error] Error calling tool 
+'send_chat_message': Failed to perform 'send_chat_message'.", tool_call_id='call_pKc2NwENjvl90G90gjdFmWYs', 
+timestamp=datetime.datetime(2026, 6, 13, 8, 17, 46, 735522, tzinfo=datetime.timezone.utc))])
+[2026-06-13 08:17:51] INFO     joinly_client.agent: LLM response received with 1 parts: [TextPart(content='Here are 
+the key insights from todayΓÇÖs meeting, summarized clearly:\n\n- The conversation initially started around **Airbnb 
+booking help**, but quickly pivoted to a more important need: **building voice agents for customer care**.\n- You 
+clarified that youΓÇÖre interested in **creating voice agents yourself**, not just using an off-the-shelf 
+assistant.\n- We discussed, at a high level, what a **customer care voice agent** involves: handling calls, 
+understanding speech, responding naturally, and supporting real support workflows.\n- No final technical or business 
+decisions were made yetΓÇöthis meeting was mainly **discovery and requirement gathering**.\n- The main open items are 
+still:\n  - Whether this is for a **startup, company, or personal project**\n  - Whether you need **inbound calls, 
+outbound calls, or both**\n  - Which **country or market** the customers are in\n\nMy recommendation for next 
+steps:\n- Clearly define the primary customer support use cases\n- Decide the scope of the first voice agent (simple 
+FAQ vs full support)\n- Then choose between a **no-code platform** or a **custom-built solution**\n\nIf you want, in 
+the next step I can give you a **concrete architecture**, **tool recommendations**, or a **sample customer care voice 
+flow**.')]. 5064 input tokens and 263 output tokens

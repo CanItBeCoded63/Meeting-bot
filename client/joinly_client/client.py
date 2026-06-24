@@ -75,6 +75,8 @@ class JoinlyClient:
             Callable[[list[TranscriptSegment]], Coroutine[None, None, None]]
         ] = set()
         self._last_utterance: float = 0.0
+        self._last_trigger_time: float = 0.0
+        self._active_speaker: str | None = None
         self._segment_callbacks: set[
             Callable[[list[TranscriptSegment]], Coroutine[None, None, None]]
         ] = set()
@@ -265,6 +267,7 @@ class JoinlyClient:
     async def _utterance_update(self) -> None:
         """Update the utterance callback with new segments."""
         if not self.joined:
+            logger.info("Utterance update ignored because client not joined")
             return
 
         resource = await self.client.read_resource(TRANSCRIPT_URL)
@@ -272,10 +275,40 @@ class JoinlyClient:
         new_transcript = transcript.with_role(SpeakerRole.participant).after(
             self._last_utterance
         )
-        if new_transcript.segments and (
-            not self.name_trigger or name_in_transcript(new_transcript, self.name)
-        ):
+        logger.info(
+            "Utterance update: new_transcript text: '%s', number of segments: %d",
+            new_transcript.text,
+            len(new_transcript.segments),
+        )
+        import time
+        current_time = time.time()
+        is_name_mentioned = name_in_transcript(new_transcript, self.name) if new_transcript.segments else False
+        
+        current_speaker = new_transcript.segments[-1].speaker if new_transcript.segments else None
+        is_in_conversation_window = (
+            (current_time - self._last_trigger_time) <= 60.0
+            and current_speaker is not None
+            and current_speaker == self._active_speaker
+        )
+
+        is_triggered = not self.name_trigger or is_name_mentioned or is_in_conversation_window
+
+        logger.info(
+            "Name trigger check: self.name_trigger=%s, self.name='%s', is_name_mentioned=%s, is_in_conversation_window=%s (active=%s, current=%s) -> is_triggered=%s",
+            self.name_trigger,
+            self.name,
+            is_name_mentioned,
+            is_in_conversation_window,
+            self._active_speaker,
+            current_speaker,
+            is_triggered,
+        )
+        if new_transcript.segments and is_triggered:
+            if is_name_mentioned or not self.name_trigger:
+                self._active_speaker = current_speaker
             self._last_utterance = new_transcript.segments[-1].start
+            self._last_trigger_time = current_time
+            logger.info("Triggered! Calling %d callbacks", len(self._utterance_callbacks))
             for callback in self._utterance_callbacks:
                 self._track_task(
                     asyncio.create_task(callback(new_transcript.compact().segments))
@@ -330,6 +363,7 @@ class JoinlyClient:
         self.joined = True
         self._last_utterance = 0.0
         self._last_segment = 0.0
+        self._active_speaker = None
 
     async def leave_meeting(self) -> None:
         """Leave the current meeting."""
@@ -341,6 +375,7 @@ class JoinlyClient:
         self.joined = False
         self._last_utterance = 0.0
         self._last_segment = 0.0
+        self._active_speaker = None
 
     async def get_transcript(self) -> Transcript:
         """Get the full transcript from the server.
@@ -406,6 +441,8 @@ class JoinlyClient:
             "speak_text",
             arguments={"text": text},
         )
+        import time
+        self._last_trigger_time = time.time()
 
     async def send_chat_message(self, message: str) -> None:
         """Send a chat message in the meeting.
@@ -421,6 +458,8 @@ class JoinlyClient:
             "send_chat_message",
             arguments={"message": message},
         )
+        import time
+        self._last_trigger_time = time.time()
 
     async def get_video_snapshot(self) -> VideoSnapshot:
         """Get a snapshot of the current video feed.

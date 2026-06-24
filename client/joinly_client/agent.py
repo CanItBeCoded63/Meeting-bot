@@ -40,7 +40,7 @@ class ConversationalToolAgent:
         tool_executor: ToolExecutor,
         *,
         prompt: str | None = None,
-        max_messages: int = 50,
+        max_messages: int = 500,
         max_tool_result_chars: int = 2048,
         max_ephemeral_tool_result_chars: int = 16384,
         max_agent_iter: int | None = 15,
@@ -174,7 +174,7 @@ class ConversationalToolAgent:
         Returns:
             ModelResponse: The response from the LLM.
         """
-        logger.debug("Calling LLM with %d messages", len(messages))
+        logger.info("Calling LLM with %d messages. Last message: %s", len(messages), messages[-1] if messages else "None")
         response = await model_request(
             self._llm,
             [ModelRequest(parts=[SystemPromptPart(self._prompt)]), *messages],
@@ -201,9 +201,10 @@ class ConversationalToolAgent:
                 allow_text_output=self._llm.model_name.startswith("gpt-5"),
             ),
         )
-        logger.debug(
-            "LLM response received with %d parts, %d input tokens and %d output tokens",
+        logger.info(
+            "LLM response received with %d parts: %s. %d input tokens and %d output tokens",
             len(response.parts),
+            response.parts,
             response.usage.request_tokens or 0,
             response.usage.response_tokens or 0,
         )

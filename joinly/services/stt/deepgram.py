@@ -62,7 +62,7 @@ class DeepgramSTT(STT):
             mip_opt_out: Whether to opt out of the model improvement program
                 (default is True). See more at https://developers.deepgram.com/docs/the-deepgram-model-improvement-partnership-program.
         """
-        config = DeepgramClientOptions(options={"keep_alive": True})
+        config = DeepgramClientOptions(options={"keepalive": "true"})
         dg = DeepgramClient(config=config)
         self._client: AsyncListenWebSocketClient = dg.listen.asyncwebsocket.v("1")  # type: ignore[attr-type]
         self.model_name = model_name or (

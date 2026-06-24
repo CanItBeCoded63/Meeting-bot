@@ -65,21 +65,42 @@ class TeamsBrowserPlatformController(BaseBrowserPlatformController):
     ) -> None:
         """Join a standard Teams meeting.
 
+        Handles both classic and new-style (teams.microsoft.com/meet/...) URLs.
+        New-style URLs redirect through a launcher page that offers to open the
+        desktop app — we click "Continue on this browser" / "Join on the web"
+        to bypass it and land on the web join page.
+
         Args:
             page: The Playwright page instance.
             url: The URL of the Teams meeting.
             name: The name of the participant.
         """
-        await page.goto(url, wait_until="load", timeout=20000)
+        # Use a longer timeout — new meet/ URLs do an extra launcher redirect
+        await page.goto(url, wait_until="load", timeout=40000)
 
         async def _dismiss_dialog(page: Page) -> None:
-            await page.click('div[role="dialog"] button', timeout=0)
+            with contextlib.suppress(PlaywrightTimeoutError):
+                await page.click('div[role="dialog"] button', timeout=0)
+
+        async def _click_join_browser(page: Page) -> None:
+            """Click through the Teams launcher page to the web join page."""
+            with contextlib.suppress(PlaywrightTimeoutError):
+                btn_pattern = re.compile(
+                    r"join.*browser|continue.*web|join.*web|continue.*browser",
+                    re.IGNORECASE,
+                )
+                join_browser_btn = page.get_by_role("button", name=btn_pattern)
+                await join_browser_btn.click(timeout=15000)
 
         dismiss_dialog = asyncio.create_task(_dismiss_dialog(page))
+        join_browser = asyncio.create_task(_click_join_browser(page))
 
         try:
-            name_field = page.get_by_placeholder(re.compile("name", re.IGNORECASE))
-            await name_field.fill(name, timeout=20000)
+            # Use a broader locator + longer timeout to handle the extra redirect
+            name_field = page.locator(
+                'input[placeholder*="name" i], input[aria-label*="name" i]'
+            ).first
+            await name_field.fill(name, timeout=40000)
 
             join_btn = page.get_by_role(
                 "button", name=re.compile(r"join", re.IGNORECASE)
@@ -87,8 +108,9 @@ class TeamsBrowserPlatformController(BaseBrowserPlatformController):
             await join_btn.click(timeout=10000)
 
         finally:
-            if not dismiss_dialog.done():
-                dismiss_dialog.cancel()
+            for task in [dismiss_dialog, join_browser]:
+                if not task.done():
+                    task.cancel()
 
     async def _join_gov_teams(
         self,
