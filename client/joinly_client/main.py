@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 from fastmcp import Client, FastMCP
 
 from joinly_client.client import JoinlyClient
-from joinly_client.types import McpClientConfig, TranscriptSegment
+from joinly_client.types import McpClientConfig, TranscriptSegment, SpeakerRole
 from joinly_client.utils import get_llm, get_prompt, load_tools
 
 logger = logging.getLogger(__name__)
@@ -376,7 +376,7 @@ async def run(  # noqa: PLR0913, C901
             await stack.enter_async_context(additional_client)
             logger.debug("Connected to %s", client_name)
 
-        joinly_config = McpClientConfig(client=client.client, exclude=["join_meeting"])
+        joinly_config = McpClientConfig(client=client.client, exclude=["join_meeting", "leave_meeting"])
 
         # ── request_leave tool ───────────────────────────────────────────────────
         # Registered as an in-process FastMCP tool so the LLM can trigger a
@@ -393,6 +393,9 @@ async def run(  # noqa: PLR0913, C901
             requested_leave_event.set()
             return "Leave requested. I will post the meeting summary and leave shortly."
 
+        internal_client = Client(internal_mcp)
+        await stack.enter_async_context(internal_client)
+
         async def _speak_filler(tool_name: str, args: dict[str, Any]) -> None:
             import random
             fillers = [
@@ -407,7 +410,7 @@ async def run(  # noqa: PLR0913, C901
         tools, tool_executor = await load_tools(
             {
                 "joinly": joinly_config,
-                "joinly-internal": McpClientConfig(client=internal_mcp),
+                "joinly-internal": McpClientConfig(client=internal_client),
                 **(
                     {
                         n: McpClientConfig(c, pre_callback=_speak_filler)
@@ -445,6 +448,40 @@ async def run(  # noqa: PLR0913, C901
             loop = asyncio.get_running_loop()
             for sig in (signal.SIGTERM, signal.SIGINT):
                 loop.add_signal_handler(sig, shutdown_event.set)
+
+            async def poll_chat() -> None:
+                """Poll the chat history and trigger agent on mentions."""
+                last_count = 0
+                while not shutdown_event.is_set():
+                    try:
+                        history = await client.get_chat_history()
+                        messages = history.messages
+                        if len(messages) > last_count:
+                            new_msgs = messages[last_count:]
+                            last_count = len(messages)
+                            for msg in new_msgs:
+                                # Trigger if not from ourselves and mentions bot name
+                                if (
+                                    msg.sender != client.name 
+                                    and msg.text 
+                                    and client.name.lower() in msg.text.lower()
+                                ):
+                                    logger.info("Triggered by chat message: %s", msg.text)
+                                    import time
+                                    segment = TranscriptSegment(
+                                        text=f"[In Meeting Chat] {msg.text}",
+                                        start=time.time(),
+                                        end=time.time() + 1,
+                                        speaker=msg.sender or "Participant",
+                                        role=SpeakerRole.participant
+                                    )
+                                    # Feed it directly into the agent
+                                    await agent.on_utterance([segment])
+                    except Exception as e:  # noqa: BLE001
+                        logger.error(f"Chat polling failed: {e}")
+                    await asyncio.sleep(2)
+
+            chat_poll_task = asyncio.create_task(poll_chat())
 
             try:
                 if auto_leave:
@@ -511,47 +548,65 @@ async def run(  # noqa: PLR0913, C901
                         except Exception:  # noqa: BLE001
                             pass
             finally:
+                chat_poll_task.cancel()
                 # --- End-of-meeting summary ---
                 try:
                     from pydantic_ai.direct import model_request  # noqa: PLC0415
                     from pydantic_ai.messages import ModelRequest, SystemPromptPart, UserPromptPart  # noqa: PLC0415
                     from pydantic_ai.models import ModelRequestParameters  # noqa: PLC0415
+                    from joinly_client.client import TRANSCRIPT_URL  # noqa: PLC0415
+                    from joinly_client.types import Transcript  # noqa: PLC0415
 
                     elapsed = datetime.now(tz=UTC) - meeting_start_time
                     mins = int(elapsed.total_seconds() // 60)
 
-                    # Capture ONLY real human participant utterances (UserPromptPart lines
-                    # that look like "Speaker: text") — excludes system prompts, tool
-                    # returns, and Alex's internal speak_text calls so the transcript
-                    # reflects the true conversation and nothing gets silently dropped.
                     convo_lines = []
-                    for m in agent._messages:  # noqa: SLF001
-                        for p in getattr(m, "parts", []):
-                            if (
-                                isinstance(p, UserPromptPart)
-                                and isinstance(p.content, str)
-                                and ": " in p.content          # "Speaker: text" shape
-                                and len(p.content) > 5
-                            ):
-                                convo_lines.append(p.content)
+                    # 1. Try to read full live transcript from joinly server resource
+                    try:
+                        resource = await client.client.read_resource(TRANSCRIPT_URL)
+                        live_transcript = Transcript.model_validate_json(resource[0].text)
+                        compacted = live_transcript.compact(max_gap=2.0)
+                        for s in compacted.segments:
+                            speaker_name = s.speaker or "Participant"
+                            convo_lines.append(f"{speaker_name}: {s.text}")
+                        logger.info("Retrieved %d transcript lines from server resource.", len(convo_lines))
+                    except Exception as resource_err:
+                        logger.warning("Could not read live transcript resource: %s", resource_err)
 
-                    # Also capture Alex's spoken replies (joinly_speak_text tool args)
-                    from pydantic_ai.messages import ModelResponse, ToolCallPart  # noqa: PLC0415
-                    for m in agent._messages:  # noqa: SLF001
-                        if isinstance(m, ModelResponse):
-                            for p in m.parts:
+                    # 2. Fallback to agent message history if resource was empty or failed
+                    if not convo_lines:
+                        # Capture ONLY real human participant utterances (UserPromptPart lines
+                        # that look like "Speaker: text") — excludes system prompts, tool
+                        # returns, and Alex's internal speak_text calls so the transcript
+                        # reflects the true conversation and nothing gets silently dropped.
+                        for m in agent._messages:  # noqa: SLF001
+                            for p in getattr(m, "parts", []):
                                 if (
-                                    isinstance(p, ToolCallPart)
-                                    and p.tool_name == "joinly_speak_text"
-                                    and isinstance(p.args, str)
+                                    isinstance(p, UserPromptPart)
+                                    and isinstance(p.content, str)
+                                    and ": " in p.content          # "Speaker: text" shape
+                                    and len(p.content) > 5
                                 ):
-                                    try:
-                                        import json  # noqa: PLC0415
-                                        text = json.loads(p.args).get("text", "")
-                                        if text:
-                                            convo_lines.append(f"Alex: {text}")
-                                    except Exception:  # noqa: BLE001
-                                        pass
+                                    convo_lines.append(p.content)
+
+                        # Also capture Alex's spoken replies (joinly_speak_text tool args)
+                        from pydantic_ai.messages import ModelResponse, ToolCallPart  # noqa: PLC0415
+                        for m in agent._messages:  # noqa: SLF001
+                            if isinstance(m, ModelResponse):
+                                for p in m.parts:
+                                    if (
+                                        isinstance(p, ToolCallPart)
+                                        and p.tool_name == "joinly_speak_text"
+                                        and isinstance(p.args, str)
+                                    ):
+                                        try:
+                                            import json  # noqa: PLC0415
+                                            text = json.loads(p.args).get("text", "")
+                                            if text:
+                                                convo_lines.append(f"Alex: {text}")
+                                        except Exception:  # noqa: BLE001
+                                            pass
+                        logger.info("Retrieved %d transcript lines from agent message history.", len(convo_lines))
 
                     # Sort is not needed — messages are already chronological.
                     # Cap at last 120 lines to include long meetings.

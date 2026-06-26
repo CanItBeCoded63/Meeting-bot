@@ -165,11 +165,15 @@ class TeamsBrowserPlatformController(BaseBrowserPlatformController):
         Args:
             page: The Playwright page instance.
         """
-        leave_btn = page.get_by_role("button", name=re.compile(r"leave", re.IGNORECASE))
+        leave_btn = page.get_by_role("button", name=re.compile(r"leave|hangup", re.IGNORECASE)).first
         if not await leave_btn.is_visible():
-            msg = "Leave button not found or not visible."
-            raise RuntimeError(msg)
-        await leave_btn.click(timeout=1000)
+            fallback_btn = page.locator('button[aria-label*="leave" i], button[data-tid="call-hangup"]').first
+            if await fallback_btn.is_visible():
+                leave_btn = fallback_btn
+            else:
+                msg = "Leave button not found or not visible."
+                raise RuntimeError(msg)
+        await leave_btn.click(timeout=1500)
         await page.wait_for_timeout(500)
 
     async def send_chat_message(self, page: Page, message: str) -> None:
@@ -181,10 +185,21 @@ class TeamsBrowserPlatformController(BaseBrowserPlatformController):
         """
         await self._open_chat(page)
 
-        chat_input = page.locator("div[contenteditable='true']")
+        chat_input = page.locator(
+            "div[contenteditable='true'], "
+            "[data-tid='ckeditor-chatMessageStream'], "
+            "textarea[placeholder*='message'], "
+            "div[aria-label*='Type a message']"
+        ).first
+        
         if not await chat_input.is_visible():
-            msg = "Chat input not found or not visible."
-            raise RuntimeError(msg)
+            placeholder_input = page.get_by_placeholder(re.compile(r"Type a message", re.IGNORECASE)).first
+            if await placeholder_input.is_visible():
+                chat_input = placeholder_input
+            else:
+                msg = "Chat input not found or not visible."
+                raise RuntimeError(msg)
+
         await chat_input.fill(message)
         await page.wait_for_timeout(500)
         await page.keyboard.press("Enter")
@@ -202,16 +217,37 @@ class TeamsBrowserPlatformController(BaseBrowserPlatformController):
 
         messages: list[MeetingChatMessage] = []
 
-        chat_items = await page.locator('[data-tid="chat-pane-item"]').all()
+        chat_items = await page.locator(
+            '[data-tid="chat-pane-item"], '
+            '[data-tid="message-pane-item"], '
+            'div[data-ui-id="chat-message"]'
+        ).all()
+        # Fallback to general list items in the chat pane if specific data-tids fail
+        if not chat_items:
+            chat_pane = page.locator('[data-tid="chat-pane"], aside, div[role="complementary"]').first
+            if await chat_pane.is_visible():
+                chat_items = await chat_pane.get_by_role("listitem").all()
+                
         for el in chat_items:
-            content_el = el.locator('[data-tid="chat-pane-message"]')
-            if not await content_el.count():
+            content_el = el.locator('[data-tid="chat-pane-message"], [data-tid="message-body"]').first
+            if await content_el.is_visible():
+                text = (await content_el.inner_text()).strip()
+            else:
+                text = (await el.inner_text()).strip()
+                
+            if not text:
                 continue
-            text = (await content_el.first.inner_text()).strip()
-            ts = await el.locator("time[datetime]").first.get_attribute("datetime")
+                
+            ts_el = el.locator("time[datetime]").first
+            ts = await ts_el.get_attribute("datetime") if await ts_el.is_visible() else None
+            
             author_locator = el.locator('[data-tid="message-author-name"]').first
-            sender_text = await author_locator.text_content() or ""
-            sender = sender_text.strip() or None
+            if await author_locator.is_visible():
+                sender_text = await author_locator.text_content() or ""
+                sender = sender_text.strip() or None
+            else:
+                sender = None
+                
             messages.append(MeetingChatMessage(text=text, timestamp=ts, sender=sender))
 
         return MeetingChatHistory(messages=messages)
@@ -225,16 +261,20 @@ class TeamsBrowserPlatformController(BaseBrowserPlatformController):
         Returns:
             list[MeetingParticipant]: A list of participants in the meeting.
         """
-        participants_list = page.locator('div[aria-label="Attendees"][role="tree"]')
+        participants_list = page.locator('div[aria-label="Attendees"][role="tree"]').first
         is_participant_list_visible = await participants_list.is_visible()
 
         if not is_participant_list_visible:
             participants_button = page.get_by_role(
                 "button", name=re.compile(r"^people", re.IGNORECASE)
-            )
+            ).first
             if not await participants_button.is_visible():
-                msg = "Participants button not found or not visible."
-                raise RuntimeError(msg)
+                fallback_btn = page.locator('button:has-text("People"), button[aria-label*="People" i]').first
+                if await fallback_btn.is_visible():
+                    participants_button = fallback_btn
+                else:
+                    msg = "Participants button not found or not visible."
+                    raise RuntimeError(msg)
             await participants_button.click()
             await page.wait_for_timeout(1000)
             if not await participants_list.is_visible():
@@ -337,7 +377,7 @@ class TeamsBrowserPlatformController(BaseBrowserPlatformController):
         await share_btn.first.click(timeout=2000)
         await page.wait_for_timeout(500)
 
-    async def _check_joined(self, page: Page, timeout: float = 20) -> bool:  # noqa: ASYNC109
+    async def _check_joined(self, page: Page, timeout: float = 90) -> bool:  # noqa: ASYNC109
         """Check if the Teams meeting has been joined successfully.
 
         Looks for lobby indicators (various "waiting" messages across
@@ -352,23 +392,29 @@ class TeamsBrowserPlatformController(BaseBrowserPlatformController):
             bool: True if joined, False otherwise.
         """
         locators = [
-            page.locator("span >> text=/please wait/i"),
-            page.locator("span >> text=/will let you in/i"),
-            page.locator("span >> text=/waiting/i"),
-            page.locator("span >> text=/someone in the meeting/i"),
-            page.get_by_role("button", name=re.compile(r"leave", re.IGNORECASE)),
+            ("Lobby (please wait)", page.locator("span >> text=/please wait/i")),
+            ("Lobby (will let you in)", page.locator("span >> text=/will let you in/i")),
+            ("Lobby (waiting)", page.locator("span >> text=/waiting/i")),
+            ("Lobby (someone in meeting)", page.locator("span >> text=/someone in the meeting/i")),
+            ("Meeting Room (leave button)", page.get_by_role("button", name=re.compile(r"leave", re.IGNORECASE))),
         ]
 
         tasks = [
             asyncio.create_task(loc.wait_for(state="visible", timeout=0))
-            for loc in locators
+            for _, loc in locators
         ]
 
         try:
+            logger.info("Waiting up to %s seconds for join/lobby indicators...", timeout)
             done, _ = await asyncio.wait(
                 tasks, return_when=asyncio.FIRST_COMPLETED, timeout=timeout
             )
-            return any(not task.exception() for task in done)
+            for name, task in zip([n for n, _ in locators], tasks):
+                if task.done() and not task.exception():
+                    logger.info("Join check succeeded: detected indicator '%s'", name)
+                    return True
+            logger.warning("Join check timed out: no indicators detected in %s seconds.", timeout)
+            return False
         finally:
             for task in tasks:
                 if not task.done():
@@ -376,20 +422,34 @@ class TeamsBrowserPlatformController(BaseBrowserPlatformController):
 
     async def _open_chat(self, page: Page) -> None:
         """Open the chat in the Teams meeting."""
-        chat_input = page.locator("div[contenteditable='true']")
+        chat_input = page.locator(
+            "div[contenteditable='true'], "
+            "[data-tid='ckeditor-chatMessageStream'], "
+            "textarea[placeholder*='message'], "
+            "div[aria-label*='Type a message']"
+        ).first
+        
         is_chat_visible = await chat_input.is_visible()
+        if not is_chat_visible:
+            placeholder_input = page.get_by_placeholder(re.compile(r"Type a message", re.IGNORECASE)).first
+            if await placeholder_input.is_visible():
+                is_chat_visible = True
 
         if not is_chat_visible:
             chat_button = page.get_by_role(
-                "button", name=re.compile(r"^chat", re.IGNORECASE)
-            )
+                "button", name=re.compile(r"chat", re.IGNORECASE)
+            ).first
             if not await chat_button.is_visible():
-                msg = "Chat button not found or not visible."
-                raise RuntimeError(msg)
+                # Fallback to just clicking anything with "chat" in its aria-label or text
+                fallback_button = page.locator('button[aria-label*="chat" i], button:has-text("Chat")').first
+                if await fallback_button.is_visible():
+                    chat_button = fallback_button
+                else:
+                    msg = "Chat button not found or not visible."
+                    raise RuntimeError(msg)
+                    
             await chat_button.click()
-            await page.wait_for_timeout(1000)
-            if not await chat_input.is_visible():
-                await page.wait_for_timeout(2000)
+            await page.wait_for_timeout(1500)
 
     async def _setup_active_speaker_observer(self, page: Page) -> None:
         """Setup the active speaker observer for Teams."""

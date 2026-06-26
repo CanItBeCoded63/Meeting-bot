@@ -310,8 +310,16 @@ class ConversationalToolAgent:
 
         if isinstance(content, list):
             tool_content = [process_item(item, i) for i, item in enumerate(content)]
+            if not all(isinstance(x, str) for x in tool_content):
+                tool_content = json.dumps(tool_content, ensure_ascii=False)
+            else:
+                tool_content = "\n".join(tool_content)
         else:
             tool_content = process_item(content)
+            if tool_content is None:
+                tool_content = ""
+            elif not isinstance(tool_content, str):
+                tool_content = str(tool_content)
 
         user_part = (
             UserPromptPart(content=artifacts, part_kind="user-prompt")
