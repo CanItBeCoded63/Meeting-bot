@@ -14,6 +14,7 @@ from pydantic_ai.messages import (
     ModelRequestPart,
     ModelResponse,
     SystemPromptPart,
+    TextPart,
     ToolCallPart,
     ToolReturnPart,
     UserPromptPart,
@@ -151,6 +152,7 @@ class ConversationalToolAgent:
                 self._messages = self._truncate_tool_results(
                     self._messages, max_chars=self._max_ephemeral_tool_result_chars
                 )
+                self._messages = self._sanitize_messages_for_llm(self._messages)
 
                 await self._set_status("llm_call")
                 response = await self._call_llm(self._messages)
@@ -162,6 +164,8 @@ class ConversationalToolAgent:
                 if self._check_end_turn(response, request):
                     break
                 iteration += 1
+        except Exception:
+            logger.exception("Agent run loop failed.")
         finally:
             await self._set_status(None)
 
@@ -174,7 +178,11 @@ class ConversationalToolAgent:
         Returns:
             ModelResponse: The response from the LLM.
         """
-        logger.info("Calling LLM with %d messages. Last message: %s", len(messages), messages[-1] if messages else "None")
+        logger.info(
+            "Calling LLM with %d messages. Last message: %s",
+            len(messages),
+            messages[-1] if messages else "None",
+        )
         response = await model_request(
             self._llm,
             [ModelRequest(parts=[SystemPromptPart(self._prompt)]), *messages],
@@ -202,7 +210,8 @@ class ConversationalToolAgent:
             ),
         )
         logger.info(
-            "LLM response received with %d parts: %s. %d input tokens and %d output tokens",
+            "LLM response received with %d parts: %s. "
+            "%d input tokens and %d output tokens",
             len(response.parts),
             response.parts,
             response.usage.request_tokens or 0,
@@ -217,6 +226,80 @@ class ConversationalToolAgent:
             meta={"model": self._llm.model_name, "provider": self._llm.system},
         )
         return response
+
+    def _sanitize_messages_for_llm(  # noqa: C901, PLR0912, PLR0915
+        self, messages: list[ModelMessage]
+    ) -> list[ModelMessage]:
+        """Normalize message parts so OpenAI payload content is always non-null."""
+        out: list[ModelMessage] = []
+        changes = 0
+
+        for message in messages:
+            parts: list[Any] = []
+            changed = False
+
+            if isinstance(message, ModelResponse):
+                has_text = False
+                has_tool_call = False
+
+                for part in message.parts:
+                    if isinstance(part, TextPart):
+                        has_text = True
+                        if part.content is None:
+                            parts.append(replace(part, content=""))
+                            changed = True
+                        else:
+                            parts.append(part)
+                    elif isinstance(part, ToolCallPart):
+                        has_tool_call = True
+                        if part.args is None:
+                            parts.append(replace(part, args={}))
+                            changed = True
+                        else:
+                            parts.append(part)
+                    else:
+                        parts.append(part)
+
+                if has_tool_call and not has_text:
+                    parts.insert(0, TextPart(content=""))
+                    changed = True
+
+                out.append(replace(message, parts=parts) if changed else message)
+                if changed:
+                    changes += 1
+                continue
+
+            for part in message.parts:
+                if isinstance(part, ToolReturnPart) and part.content is None:
+                    parts.append(replace(part, content=""))
+                    changed = True
+                    continue
+
+                if isinstance(part, UserPromptPart):
+                    if part.content is None:
+                        parts.append(replace(part, content=""))
+                        changed = True
+                        continue
+
+                    if isinstance(part.content, (list, tuple)):
+                        normalized_content = [
+                            "" if item is None else item for item in part.content
+                        ]
+                        if normalized_content != list(part.content):
+                            parts.append(replace(part, content=normalized_content))
+                            changed = True
+                            continue
+
+                parts.append(part)
+
+            out.append(replace(message, parts=parts) if changed else message)
+            if changed:
+                changes += 1
+
+        if changes:
+            logger.warning("Sanitized %d message(s) before LLM call.", changes)
+
+        return out
 
     async def _call_tools(self, response: ModelResponse) -> ModelRequest | None:
         """Handle the response from the LLM and call tools.

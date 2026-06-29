@@ -79,6 +79,8 @@ class BrowserMeetingProvider(BaseMeetingProvider, VideoReader):
         snapshot_size: tuple[int, int] = (512, 288),
         vnc_server: bool = False,
         vnc_server_port: int = 5900,
+        admission_timeout_seconds: int = 600,
+        browser_profile_dir: str | None = None,
     ) -> None:
         """Initialize the browser meeting provider.
 
@@ -93,9 +95,12 @@ class BrowserMeetingProvider(BaseMeetingProvider, VideoReader):
                 (default is (512, 288)).
             vnc_server (bool): Whether to start a VNC server for the virtual display.
             vnc_server_port (int): The port to use for the VNC server.
+            admission_timeout_seconds (int): Max time to wait for lobby admission.
+            browser_profile_dir (str | None): Persistent Chromium profile directory.
         """
         self.snapshot_size = snapshot_size
         self._display_size = display_size
+        self._admission_timeout_seconds = admission_timeout_seconds
         self._env = os.environ.copy()
         self._pulse_server = PulseServer(env=self._env)
         self._virtual_display = VirtualDisplay(
@@ -114,7 +119,10 @@ class BrowserMeetingProvider(BaseMeetingProvider, VideoReader):
             if not writer_byte_depth
             else VirtualMicrophone(env=self._env, byte_depth=writer_byte_depth)
         )
-        self._browser_session = BrowserSession(env=self._env)
+        self._browser_session = BrowserSession(
+            env=self._env,
+            profile_dir=browser_profile_dir,
+        )
         self._services = [
             self._pulse_server,
             self._virtual_display,
@@ -222,6 +230,10 @@ class BrowserMeetingProvider(BaseMeetingProvider, VideoReader):
         """
         for platform_controller_type in PLATFORMS:
             if platform_controller_type.url_pattern.match(url):
+                if platform_controller_type is TeamsBrowserPlatformController:
+                    return platform_controller_type(
+                        admission_timeout_seconds=self._admission_timeout_seconds
+                    )
                 return platform_controller_type()
 
         msg = (

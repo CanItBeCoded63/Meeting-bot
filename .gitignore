@@ -176,3 +176,7 @@ cython_debug/
 node_modules/
 .DS_Store
 *.local.*
+
+# Local browser auth state for Teams/Playwright. Treat like credentials.
+.joinly-browser-profile/
+.joinly-teams-cookies.json

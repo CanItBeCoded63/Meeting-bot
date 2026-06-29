@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import json
 import logging
 from pathlib import Path
@@ -8,6 +9,7 @@ from urllib.parse import urlparse
 import click
 from dotenv import load_dotenv
 
+from joinly.scheduler import ScheduledMeeting, run_scheduler
 from joinly.server import mcp
 from joinly.settings import Settings, set_settings
 from joinly.utils.logging import configure_logging
@@ -303,13 +305,43 @@ def _parse_mcp(
     "(no stdio/npm commands, no interactive OAuth).",
     default=None,
 )
+@click.option(
+    "--schedule-file",
+    type=click.Path(exists=True, dir_okay=False, readable=True),
+    help="Path to a JSON schedule file for automatic meeting joins. "
+    "Only applicable with --client.",
+    default=None,
+    show_default=True,
+    show_envvar=True,
+    envvar="JOINLY_SCHEDULE_FILE",
+)
+@click.option(
+    "--schedule-poll-seconds",
+    type=int,
+    help="Scheduler polling interval in seconds. "
+    "Only applicable with --schedule-file.",
+    default=15,
+    show_default=True,
+    show_envvar=True,
+    envvar="JOINLY_SCHEDULE_POLL_SECONDS",
+)
+@click.option(
+    "--schedule-grace-seconds",
+    type=int,
+    help="Grace window in seconds after scheduled time to still start a meeting. "
+    "Only applicable with --schedule-file.",
+    default=300,
+    show_default=True,
+    show_envvar=True,
+    envvar="JOINLY_SCHEDULE_GRACE_SECONDS",
+)
 @click.argument(
     "meeting-url",
     default=None,
     type=str,
     required=False,
 )
-def cli(  # noqa: PLR0913
+def cli(  # noqa: C901, PLR0913
     *,
     server: bool | None,
     host: str,
@@ -324,6 +356,9 @@ def cli(  # noqa: PLR0913
     meeting_url: str | None,
     mcp_servers: dict[str, dict[str, str]],
     mcp_config_file: str | None,
+    schedule_file: str | None,
+    schedule_poll_seconds: int,
+    schedule_grace_seconds: int,
     verbose: int,
     quiet: bool,
     logging_plain: bool,
@@ -346,15 +381,21 @@ def cli(  # noqa: PLR0913
         plain=logging_plain,
     )
 
-    if server is True or (server is None and meeting_url is None):
+    if server is True or (
+        server is None and meeting_url is None and schedule_file is None
+    ):
         mcp.run(transport="streamable-http", host=host, port=port, show_banner=False)
     else:
         import joinly_client
 
-        if not meeting_url:
+        if meeting_url and schedule_file:
+            msg = "Provide either a meeting URL or --schedule-file, not both."
+            raise click.UsageError(msg)
+
+        if not meeting_url and not schedule_file:
             msg = (
-                "Meeting URL is required when running as a client. "
-                "Please provide it as an argument."
+                "Meeting URL is required when running as a client unless "
+                "--schedule-file is provided."
             )
             raise click.UsageError(msg)
 
@@ -365,6 +406,40 @@ def cli(  # noqa: PLR0913
             if mcp_config is None:
                 mcp_config = {"mcpServers": {}}
             mcp_config.setdefault("mcpServers", {}).update(mcp_servers)
+
+        if schedule_file:
+
+            async def _run_scheduled_meeting(meeting: ScheduledMeeting) -> None:
+                logger.info(
+                    "Joining scheduled meeting '%s': %s",
+                    meeting.meeting_id,
+                    meeting.url,
+                )
+                await joinly_client.run(
+                    joinly_url=mcp,
+                    meeting_url=meeting.url,
+                    llm_provider=llm_provider,
+                    llm_model=llm_model,
+                    prompt=prompt,
+                    prompt_style=prompt_style,
+                    name=settings.name,
+                    name_trigger=name_trigger,
+                    mcp_config=copy.deepcopy(mcp_config),
+                )
+
+            asyncio.run(
+                run_scheduler(
+                    schedule_file=schedule_file,
+                    run_meeting=_run_scheduled_meeting,
+                    poll_interval_seconds=schedule_poll_seconds,
+                    trigger_grace_seconds=schedule_grace_seconds,
+                )
+            )
+            return
+
+        if meeting_url is None:
+            msg = "Meeting URL is required when scheduler mode is not enabled."
+            raise click.UsageError(msg)
 
         asyncio.run(
             joinly_client.run(

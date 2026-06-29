@@ -67,6 +67,9 @@ class JoinlyClient:
         self.name: str = name or self.settings.get("name", "joinly")
         self.name_trigger = name_trigger
         self.settings["name"] = self.name
+        self._conversation_window_seconds = float(
+            self.settings.get("conversation_window_seconds", 180.0)
+        )
 
         self.joined: bool = False
         self._client: Client | None = None
@@ -282,19 +285,33 @@ class JoinlyClient:
         )
         import time
         current_time = time.time()
-        is_name_mentioned = name_in_transcript(new_transcript, self.name) if new_transcript.segments else False
-        
-        current_speaker = new_transcript.segments[-1].speaker if new_transcript.segments else None
-        is_in_conversation_window = (
-            (current_time - self._last_trigger_time) <= 60.0
-            and current_speaker is not None
-            and current_speaker == self._active_speaker
+        is_name_mentioned = (
+            name_in_transcript(new_transcript, self.name)
+            if new_transcript.segments
+            else False
         )
 
-        is_triggered = not self.name_trigger or is_name_mentioned or is_in_conversation_window
+        current_speaker = (
+            new_transcript.segments[-1].speaker
+            if new_transcript.segments
+            else None
+        )
+        is_in_conversation_window = (
+            self._active_speaker is not None
+            and (current_time - self._last_trigger_time)
+            <= self._conversation_window_seconds
+        )
+
+        is_triggered = (
+            not self.name_trigger
+            or is_name_mentioned
+            or is_in_conversation_window
+        )
 
         logger.info(
-            "Name trigger check: self.name_trigger=%s, self.name='%s', is_name_mentioned=%s, is_in_conversation_window=%s (active=%s, current=%s) -> is_triggered=%s",
+            "Name trigger check: self.name_trigger=%s, self.name='%s', "
+            "is_name_mentioned=%s, is_in_conversation_window=%s "
+            "(active=%s, current=%s) -> is_triggered=%s",
             self.name_trigger,
             self.name,
             is_name_mentioned,
@@ -306,9 +323,14 @@ class JoinlyClient:
         if new_transcript.segments and is_triggered:
             if is_name_mentioned or not self.name_trigger:
                 self._active_speaker = current_speaker
+            elif current_speaker:
+                # Keep the conversation sticky even when another participant takes over.
+                self._active_speaker = current_speaker
             self._last_utterance = new_transcript.segments[-1].start
             self._last_trigger_time = current_time
-            logger.info("Triggered! Calling %d callbacks", len(self._utterance_callbacks))
+            logger.info(
+                "Triggered! Calling %d callbacks", len(self._utterance_callbacks)
+            )
             for callback in self._utterance_callbacks:
                 self._track_task(
                     asyncio.create_task(callback(new_transcript.compact().segments))

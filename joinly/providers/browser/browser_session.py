@@ -19,15 +19,24 @@ _CDP_RE = re.compile(r"DevTools listening on (ws://.*)")
 class BrowserSession:
     """A class to represent a browser session using Playwright."""
 
-    def __init__(self, *, env: dict[str, str] | None = None, cdp_port: int = 0) -> None:
+    def __init__(
+        self,
+        *,
+        env: dict[str, str] | None = None,
+        cdp_port: int = 0,
+        profile_dir: str | os.PathLike[str] | None = None,
+    ) -> None:
         """Initialize the browser params.
 
         Args:
             env: Environment variables to set for the browser (default: None)
             cdp_port (int): The port for the CDP connection (default: 0, auto-assign)
+            profile_dir: Persistent Chromium profile directory. If omitted, a
+                temporary profile is used and removed on shutdown.
         """
         self._env: dict[str, str] = env if env is not None else os.environ.copy()
         self._cdp_port: int = cdp_port
+        self._persistent_profile_dir = Path(profile_dir) if profile_dir else None
 
         self._proc: asyncio.subprocess.Process | None = None
         self._profile_dir: tempfile.TemporaryDirectory | None = None
@@ -49,14 +58,20 @@ class BrowserSession:
             logger.error(msg)
             raise RuntimeError(msg)
 
-        self._profile_dir = tempfile.TemporaryDirectory(prefix="pw-profile_")
-        logger.debug("Profile directory created at: %s", self._profile_dir.name)
+        if self._persistent_profile_dir is None:
+            self._profile_dir = tempfile.TemporaryDirectory(prefix="pw-profile_")
+            profile_dir = self._profile_dir.name
+            logger.debug("Profile directory created at: %s", profile_dir)
+        else:
+            self._persistent_profile_dir.mkdir(parents=True, exist_ok=True)
+            profile_dir = str(self._persistent_profile_dir)
+            logger.info("Using persistent browser profile: %s", profile_dir)
 
         logger.debug("Launching Chromium browser.")
         self._proc = await asyncio.create_subprocess_exec(
             str(bin_path),
             f"--remote-debugging-port={self._cdp_port}",
-            f"--user-data-dir={self._profile_dir.name}",
+            f"--user-data-dir={profile_dir}",
             "--use-fake-ui-for-media-stream",
             "--alsa-output-device=pulse",
             f"--alsa-input-device={self._env.get('PULSE_SOURCE')}",
