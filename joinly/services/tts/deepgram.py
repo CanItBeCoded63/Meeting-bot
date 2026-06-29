@@ -28,6 +28,8 @@ class DeepgramTTS(TTS):
         model_name: str | None = None,
         sample_rate: int = 24000,
         mip_opt_out: bool = True,
+        connect_retries: int = 3,
+        connect_retry_delay: float = 2.0,
     ) -> None:
         """Initialize the TTS service.
 
@@ -37,6 +39,8 @@ class DeepgramTTS(TTS):
             sample_rate: The sample rate of the audio (default is 24000).
             mip_opt_out: Whether to opt out of the model improvement program
                 (default is True). See more at https://developers.deepgram.com/docs/the-deepgram-model-improvement-partnership-program.
+            connect_retries: Number of websocket start attempts before failing.
+            connect_retry_delay: Base delay in seconds between connect retries.
         """
         config = DeepgramClientOptions(
             options={
@@ -62,6 +66,8 @@ class DeepgramTTS(TTS):
             sample_rate=sample_rate,
         )
         self._mip_opt_out = bool(mip_opt_out)
+        self._connect_retries = max(1, int(connect_retries))
+        self._connect_retry_delay = max(0.0, float(connect_retry_delay))
         self._queue: asyncio.Queue[bytes | None] | None = None
         self._lock = asyncio.Lock()
         self.audio_format = AudioFormat(sample_rate=sample_rate, byte_depth=2)
@@ -95,9 +101,7 @@ class DeepgramTTS(TTS):
             "Connecting to Deepgram TTS service with model: %s",
             self._speak_options.model,
         )
-        await self._client.start(
-            self._speak_options, addons={"mip_opt_out": self._mip_opt_out}
-        )
+        await self._start_client_with_retries()
         if not await self._client.is_connected():
             msg = "Failed to connect to Deepgram TTS service."
             logger.error(msg)
@@ -105,6 +109,42 @@ class DeepgramTTS(TTS):
         logger.debug("Connected to Deepgram TTS service")
 
         return self
+
+    async def _start_client_with_retries(self) -> None:
+        """Start the Deepgram websocket with bounded retry/backoff."""
+        for attempt in range(1, self._connect_retries + 1):
+            try:
+                await self._client.start(
+                    self._speak_options,
+                    addons={"mip_opt_out": self._mip_opt_out},
+                )
+            except Exception:
+                if attempt >= self._connect_retries:
+                    logger.exception(
+                        "Deepgram TTS websocket start failed after %d attempt(s).",
+                        attempt,
+                    )
+                    raise
+                logger.warning(
+                    "Deepgram TTS websocket start failed on attempt %d/%d; retrying.",
+                    attempt,
+                    self._connect_retries,
+                    exc_info=True,
+                )
+            else:
+                if (
+                    await self._client.is_connected()
+                    or attempt >= self._connect_retries
+                ):
+                    return
+                logger.warning(
+                    "Deepgram TTS websocket was not connected after attempt %d/%d; "
+                    "retrying.",
+                    attempt,
+                    self._connect_retries,
+                )
+
+            await asyncio.sleep(self._connect_retry_delay * attempt)
 
     async def __aexit__(self, *_exc: object) -> None:
         """Exit the asynchronous context manager."""

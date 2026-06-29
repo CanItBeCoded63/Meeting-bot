@@ -116,21 +116,37 @@ class TeamsBrowserPlatformController(BaseBrowserPlatformController):
         join_browser = asyncio.create_task(_click_join_browser(page))
 
         try:
-            # Use a broader locator + longer timeout to handle the extra redirect
-            name_field = page.locator(
-                'input[placeholder*="name" i], input[aria-label*="name" i]'
-            ).first
-            await name_field.fill(name, timeout=40000)
-
-            join_btn = page.get_by_role(
-                "button", name=re.compile(r"join", re.IGNORECASE)
-            )
-            await join_btn.click(timeout=10000)
+            await self._fill_name_if_present(page, name)
+            await self._click_final_join_button(page)
 
         finally:
             for task in [dismiss_dialog, join_browser]:
                 if not task.done():
                     task.cancel()
+
+    async def _fill_name_if_present(self, page: Page, name: str) -> None:
+        """Fill the guest name field when Teams shows one."""
+        name_field = page.locator(
+            'input[placeholder*="name" i], input[aria-label*="name" i]'
+        ).first
+        try:
+            await name_field.fill(name, timeout=15000)
+        except PlaywrightTimeoutError:
+            logger.info("Teams guest name field not shown; assuming signed-in profile.")
+
+    async def _click_final_join_button(self, page: Page) -> None:
+        """Click the meeting pre-join button after launcher redirects settle."""
+        join_button = page.get_by_role(
+            "button",
+            name=re.compile(r"^(join now|join)$|join meeting", re.IGNORECASE),
+        )
+        try:
+            await join_button.click(timeout=60000)
+        except PlaywrightTimeoutError:
+            fallback_button = page.locator(
+                'button:has-text("Join now"), button:has-text("Join")'
+            ).first
+            await fallback_button.click(timeout=15000)
 
     async def _join_gov_teams(
         self,
@@ -314,8 +330,17 @@ class TeamsBrowserPlatformController(BaseBrowserPlatformController):
                 if await fallback_btn.is_visible():
                     participants_button = fallback_btn
                 else:
-                    msg = "Participants button not found or not visible."
-                    raise RuntimeError(msg)
+                    logger.warning(
+                        "Teams participants roster is not available yet; "
+                        "returning placeholder participants."
+                    )
+                    return [
+                        MeetingParticipant(name=get_settings().name),
+                        MeetingParticipant(
+                            name="Unknown participant",
+                            infos=["participant roster unavailable"],
+                        ),
+                    ]
             await participants_button.click()
             await page.wait_for_timeout(1000)
             if not await participants_list.is_visible():

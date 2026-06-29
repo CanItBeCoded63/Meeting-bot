@@ -14,6 +14,7 @@ from joinly.utils.logging import LOGGING_TRACE
 logger = logging.getLogger(__name__)
 
 _CDP_RE = re.compile(r"DevTools listening on (ws://.*)")
+_CHROMIUM_LOCK_FILES = ("SingletonCookie", "SingletonLock", "SingletonSocket")
 
 
 class BrowserSession:
@@ -64,6 +65,7 @@ class BrowserSession:
             logger.debug("Profile directory created at: %s", profile_dir)
         else:
             self._persistent_profile_dir.mkdir(parents=True, exist_ok=True)
+            self._remove_stale_profile_locks(self._persistent_profile_dir)
             profile_dir = str(self._persistent_profile_dir)
             logger.info("Using persistent browser profile: %s", profile_dir)
 
@@ -102,15 +104,23 @@ class BrowserSession:
         )
         logger.debug("Chromium browser launched.")
 
+        cdp_endpoint: str | None = None
+        stderr_lines: list[str] = []
         while line := await self._proc.stderr.readline():  # type: ignore[attr-defined]
-            logger.log(LOGGING_TRACE, "[chromium] %s", line.decode().strip())
-            m = _CDP_RE.search(line.decode())
+            stderr_line = line.decode(errors="replace").strip()
+            stderr_lines.append(stderr_line)
+            stderr_lines = stderr_lines[-20:]
+            logger.log(LOGGING_TRACE, "[chromium] %s", stderr_line)
+            m = _CDP_RE.search(stderr_line)
             if m:
                 cdp_endpoint = m.group(1)
                 break
-        else:
-            self._proc.terminate()
-            msg = "Could not find DevTools URL in stderr"
+
+        if cdp_endpoint is None:
+            await self._terminate_chromium()
+            msg = "Could not find DevTools URL in Chromium stderr."
+            if stderr_lines:
+                msg = f"{msg} Last Chromium output: {' | '.join(stderr_lines)}"
             logger.error(msg)
             raise RuntimeError(msg)
         logger.debug("DevTools URL: %s", cdp_endpoint)
@@ -127,6 +137,25 @@ class BrowserSession:
         logger.debug("Playwright started.")
 
         return self
+
+    def _remove_stale_profile_locks(self, profile_dir: Path) -> None:
+        """Remove stale Chromium singleton locks from a persisted profile."""
+        for file_name in _CHROMIUM_LOCK_FILES:
+            lock_path = profile_dir / file_name
+            try:
+                lock_path.unlink(missing_ok=True)
+            except OSError:
+                logger.warning("Could not remove Chromium profile lock: %s", lock_path)
+
+    async def _terminate_chromium(self) -> None:
+        """Terminate the Chromium process if it is still alive."""
+        if self._proc is None or self._proc.returncode is not None:
+            return
+        try:
+            self._proc.terminate()
+        except ProcessLookupError:
+            return
+        await self._proc.wait()
 
     async def __aexit__(self, *exc: object) -> None:
         """Stop the browser."""
