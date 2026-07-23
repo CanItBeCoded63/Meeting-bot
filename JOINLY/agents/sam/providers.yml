@@ -1,0 +1,17 @@
+# Sam provider selection. Values may reference root .env variables with ${VAR_NAME}.
+
+llm:
+  provider: azure
+  model: gpt-5.2-chat
+
+joinly:
+  language: en
+  vad: silero
+  stt: deepgram
+  tts: deepgram
+  args:
+    vad: {}
+    stt:
+      model_name: nova-3-general
+    tts:
+      model_name: aura-arcas-en

@@ -1,0 +1,12 @@
+{
+    "mcpServers": {
+        "hr": {
+            "url": "https://dgn-va-demo.salmonground-f2446efd.eastus2.azurecontainerapps.io/hr-mcp/mcp"
+        },
+        "global_weather": {
+            "command": "weather-mcp",
+            "args": [],
+            "disabled": true
+        }
+    }
+}

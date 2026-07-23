@@ -1,0 +1,34 @@
+{
+  "default": {
+    "stt": {
+      "provider": "sarvam",
+      "model": "saaras:v3",
+      "language": "hi-IN"
+    },
+    "tts": {
+      "provider": "sarvam",
+      "model": "bulbul:v3",
+      "language": "hi-IN",
+      "speaker": "shubh"
+    },
+    "llm": {
+      "model": "openai/gpt-4o-mini"
+    }
+  },
+  "acme-corp": {
+    "stt": {
+      "provider": "deepgram",
+      "model": "nova-2",
+      "language": "hi-IN"
+    },
+    "tts": {
+      "provider": "deepgram",
+      "model": "aura-asteria-en",
+      "language": "en-US",
+      "speaker": null
+    },
+    "llm": {
+      "model": "openai/gpt-4o-mini"
+    }
+  }
+}

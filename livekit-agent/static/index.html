@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Agent — Provider Selector</title>
+    <meta name="description" content="Select STT and TTS providers to start a voice conversation with the AI agent.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: rgba(17, 24, 39, 0.8);
+            --bg-card-hover: rgba(30, 41, 59, 0.9);
+            --border: rgba(99, 102, 241, 0.2);
+            --border-hover: rgba(99, 102, 241, 0.5);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --success: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.3);
+            --danger: #ef4444;
+            --danger-glow: rgba(239, 68, 68, 0.3);
+            --warning: #f59e0b;
+            --gradient-1: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
+            --gradient-2: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            --gradient-danger: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(16, 185, 129, 0.04) 0%, transparent 50%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Header */
+        .header {
+            width: 100%;
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header .badge {
+            font-size: 0.65rem;
+            font-weight: 500;
+            background: var(--accent);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 9999px;
+            margin-left: 0.75rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* Main container */
+        .container {
+            width: 100%;
+            max-width: 520px;
+            padding: 2rem 1.5rem;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            flex: 1;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+
+        .card-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-title .icon {
+            font-size: 1rem;
+        }
+
+        /* Select fields */
+        .field {
+            margin-bottom: 1rem;
+        }
+
+        .field:last-child {
+            margin-bottom: 0;
+        }
+
+        .field label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+        }
+
+        .field select {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            padding-right: 2.5rem;
+        }
+
+        .field select:hover {
+            border-color: var(--border-hover);
+        }
+
+        .field select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .field select option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        /* Call button */
+        .call-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn-call {
+            width: 100%;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 14px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-start {
+            background: var(--gradient-1);
+            color: white;
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px var(--accent-glow);
+        }
+
+        .btn-start:active {
+            transform: translateY(0);
+        }
+
+        .btn-end {
+            background: var(--gradient-danger);
+            color: white;
+            box-shadow: 0 4px 20px var(--danger-glow);
+        }
+
+        .btn-end:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px var(--danger-glow);
+        }
+
+        .btn-call:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Status */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid var(--border);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            transition: background 0.3s ease;
+        }
+
+        .status-dot.connecting {
+            background: var(--warning);
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        .status-dot.connected {
+            background: var(--success);
+            box-shadow: 0 0 8px var(--success-glow);
+        }
+
+        .status-dot.error {
+            background: var(--danger);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Audio visualizer */
+        .visualizer {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            height: 50px;
+            margin: 0.5rem 0;
+        }
+
+        .visualizer.active {
+            display: flex;
+        }
+
+        .visualizer .bar {
+            width: 4px;
+            height: 10px;
+            background: var(--accent);
+            border-radius: 4px;
+            transition: height 0.1s ease;
+            animation: audioWave 1.2s ease-in-out infinite;
+        }
+
+        .visualizer .bar:nth-child(1) { animation-delay: 0s; }
+        .visualizer .bar:nth-child(2) { animation-delay: 0.1s; }
+        .visualizer .bar:nth-child(3) { animation-delay: 0.2s; }
+        .visualizer .bar:nth-child(4) { animation-delay: 0.3s; }
+        .visualizer .bar:nth-child(5) { animation-delay: 0.4s; }
+        .visualizer .bar:nth-child(6) { animation-delay: 0.3s; }
+        .visualizer .bar:nth-child(7) { animation-delay: 0.2s; }
+        .visualizer .bar:nth-child(8) { animation-delay: 0.1s; }
+        .visualizer .bar:nth-child(9) { animation-delay: 0s; }
+
+        @keyframes audioWave {
+            0%, 100% { height: 8px; }
+            50% { height: 40px; }
+        }
+
+        /* Info text */
+        .info-text {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Provider tag */
+        .provider-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        /* Connected state hides config */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Room info */
+        .room-info {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
+            }
+            .card {
+                padding: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <h1>🎙️ Voice Agent</h1>
+        <span class="badge">LIVE</span>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+
+        <!-- STT Config Card -->
+        <div class="card" id="stt-card">
+            <div class="card-title">
+                <span class="icon">👂</span>
+                Speech-to-Text (STT)
+            </div>
+            <div class="field">
+                <label for="stt-provider">Provider</label>
+                <select id="stt-provider" onchange="updateSTTModels()">
+                    <option value="sarvam">Sarvam AI</option>
+                    <option value="deepgram">Deepgram</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="stt-model">Model</label>
+                <select id="stt-model"></select>
+            </div>
+        </div>
+
+        <!-- TTS Config Card -->
+        <div class="card" id="tts-card">
+            <div class="card-title">
+                <span class="icon">🔊</span>
+                Text-to-Speech (TTS)
+            </div>
+            <div class="field">
+                <label for="tts-provider">Provider</label>
+                <select id="tts-provider" onchange="updateTTSModels()">
+                    <option value="sarvam">Sarvam AI</option>
+                    <option value="deepgram">Deepgram</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="tts-model">Model</label>
+                <select id="tts-model"></select>
+            </div>
+            <div class="field" id="speaker-field">
+                <label for="tts-speaker">Speaker Voice</label>
+                <select id="tts-speaker">
+                    <option value="shubh">Shubh (Male)</option>
+                    <option value="meera">Meera (Female)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Call Controls -->
+        <div class="call-section">
+
+            <!-- Status Bar -->
+            <div class="status-bar" id="status-bar">
+                <span class="status-dot" id="status-dot"></span>
+                <span id="status-text">Ready to connect</span>
+            </div>
+
+            <!-- Audio Visualizer (shown when connected) -->
+            <div class="visualizer" id="visualizer">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </div>
+
+            <!-- Room Info (shown when connected) -->
+            <div class="room-info hidden" id="room-info"></div>
+
+            <!-- Active Provider Tags (shown when connected) -->
+            <div class="hidden" id="active-providers" style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;">
+                <span class="provider-tag" id="active-stt"></span>
+                <span class="provider-tag" id="active-tts"></span>
+            </div>
+
+            <!-- Start Call Button -->
+            <button class="btn-call btn-start" id="btn-start" onclick="startCall()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                Start Call
+            </button>
+
+            <!-- End Call Button (hidden initially) -->
+            <button class="btn-call btn-end hidden" id="btn-end" onclick="endCall()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                End Call
+            </button>
+
+            <p class="info-text">
+                Select your preferred providers above, then click Start Call.<br>
+                The agent will speak Hindi by default.
+            </p>
+        </div>
+    </main>
+
+    <!-- LiveKit Client SDK from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.6.2/dist/livekit-client.umd.js"></script>
+
+    <script>
+        // ── Model Catalogues ──────────────────────────────────────────────────
+        const STT_MODELS = {
+            sarvam: [
+                { value: "saaras:v3", label: "saaras:v3 (Hindi, recommended)" },
+            ],
+            deepgram: [
+                { value: "nova-2", label: "nova-2 (Hindi)" },
+                { value: "nova-3", label: "nova-3 (Hindi, latest)" },
+                { value: "enhanced", label: "enhanced (Hindi)" },
+            ],
+        };
+
+        const TTS_MODELS = {
+            sarvam: [
+                { value: "bulbul:v3", label: "bulbul:v3 (Hindi)" },
+            ],
+            deepgram: [
+                { value: "aura-asteria-en", label: "aura-asteria-en (English)" },
+                { value: "aura-luna-en", label: "aura-luna-en (English, soft)" },
+            ],
+        };
+
+        // ── State ─────────────────────────────────────────────────────────────
+        let currentRoom = null;
+
+        // ── Populate Dropdowns ────────────────────────────────────────────────
+        function updateSTTModels() {
+            const provider = document.getElementById("stt-provider").value;
+            const modelSelect = document.getElementById("stt-model");
+            modelSelect.innerHTML = "";
+            STT_MODELS[provider].forEach(m => {
+                const opt = document.createElement("option");
+                opt.value = m.value;
+                opt.textContent = m.label;
+                modelSelect.appendChild(opt);
+            });
+        }
+
+        function updateTTSModels() {
+            const provider = document.getElementById("tts-provider").value;
+            const modelSelect = document.getElementById("tts-model");
+            modelSelect.innerHTML = "";
+            TTS_MODELS[provider].forEach(m => {
+                const opt = document.createElement("option");
+                opt.value = m.value;
+                opt.textContent = m.label;
+                modelSelect.appendChild(opt);
+            });
+
+            // Show/hide speaker field (only for Sarvam)
+            document.getElementById("speaker-field").style.display =
+                provider === "sarvam" ? "block" : "none";
+        }
+
+        // Initialize dropdowns
+        updateSTTModels();
+        updateTTSModels();
+
+        // ── Status Updates ────────────────────────────────────────────────────
+        function setStatus(state, text) {
+            const dot = document.getElementById("status-dot");
+            const label = document.getElementById("status-text");
+            dot.className = "status-dot " + state;
+            label.textContent = text;
+        }
+
+        // ── Start Call ────────────────────────────────────────────────────────
+        async function startCall() {
+            const btnStart = document.getElementById("btn-start");
+            const btnEnd = document.getElementById("btn-end");
+            btnStart.disabled = true;
+            setStatus("connecting", "Requesting token...");
+
+            try {
+                // 1. Get selected values
+                const sttProvider = document.getElementById("stt-provider").value;
+                const sttModel = document.getElementById("stt-model").value;
+                const ttsProvider = document.getElementById("tts-provider").value;
+                const ttsModel = document.getElementById("tts-model").value;
+                const ttsSpeaker = ttsProvider === "sarvam"
+                    ? document.getElementById("tts-speaker").value
+                    : null;
+
+                // 2. Request token from backend
+                const resp = await fetch("/api/token", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        stt_provider: sttProvider,
+                        stt_model: sttModel,
+                        tts_provider: ttsProvider,
+                        tts_model: ttsModel,
+                        tts_speaker: ttsSpeaker,
+                    }),
+                });
+
+                if (!resp.ok) throw new Error("Failed to get token");
+                const { token, room, ws_url } = await resp.json();
+
+                // 3. Connect to LiveKit room
+                setStatus("connecting", "Connecting to room...");
+
+                const lkRoom = new LivekitClient.Room({
+                    adaptiveStream: true,
+                    dynacast: true,
+                    audioCaptureDefaults: {
+                        autoGainControl: true,
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                    },
+                });
+
+                // Listen for audio tracks from the agent
+                lkRoom.on(LivekitClient.RoomEvent.TrackSubscribed, (track, publication, participant) => {
+                    if (track.kind === "audio") {
+                        const audioEl = track.attach();
+                        document.body.appendChild(audioEl);
+                    }
+                });
+
+                lkRoom.on(LivekitClient.RoomEvent.Disconnected, () => {
+                    setStatus("", "Disconnected");
+                    resetUI();
+                });
+
+                // Enable microphone and connect
+                await lkRoom.connect(ws_url, token);
+                await lkRoom.localParticipant.setMicrophoneEnabled(true);
+
+                currentRoom = lkRoom;
+
+                // 4. Update UI to connected state
+                setStatus("connected", "Connected — speak now!");
+                document.getElementById("stt-card").classList.add("hidden");
+                document.getElementById("tts-card").classList.add("hidden");
+                btnStart.classList.add("hidden");
+                btnEnd.classList.remove("hidden");
+                document.getElementById("visualizer").classList.add("active");
+                document.getElementById("room-info").classList.remove("hidden");
+                document.getElementById("room-info").textContent = `Room: ${room}`;
+
+                // Show active providers
+                const ap = document.getElementById("active-providers");
+                ap.classList.remove("hidden");
+                ap.style.display = "flex";
+                document.getElementById("active-stt").textContent = `STT: ${sttProvider}/${sttModel}`;
+                document.getElementById("active-tts").textContent = `TTS: ${ttsProvider}/${ttsModel}`;
+
+            } catch (err) {
+                console.error("Failed to start call:", err);
+                setStatus("error", "Connection failed: " + err.message);
+                btnStart.disabled = false;
+            }
+        }
+
+        // ── End Call ──────────────────────────────────────────────────────────
+        async function endCall() {
+            if (currentRoom) {
+                await currentRoom.disconnect();
+                currentRoom = null;
+            }
+            setStatus("", "Call ended");
+            resetUI();
+        }
+
+        function resetUI() {
+            document.getElementById("stt-card").classList.remove("hidden");
+            document.getElementById("tts-card").classList.remove("hidden");
+            document.getElementById("btn-start").classList.remove("hidden");
+            document.getElementById("btn-start").disabled = false;
+            document.getElementById("btn-end").classList.add("hidden");
+            document.getElementById("visualizer").classList.remove("active");
+            document.getElementById("room-info").classList.add("hidden");
+            document.getElementById("active-providers").classList.add("hidden");
+
+            // Remove any attached audio elements
+            document.querySelectorAll("audio").forEach(el => el.remove());
+        }
+    </script>
+</body>
+</html>

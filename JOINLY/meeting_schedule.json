@@ -1,0 +1,12 @@
+{
+  "timezone": "Asia/Kolkata",
+  "meetings": [
+    {
+      "id": "daily-standup",
+      "url": "https://teams.microsoft.com/meet/216088723078259?p=Gc5Wo2rmC41kDYKd9f",
+      "time": "23:11",
+      "days": ["mon", "tue", "wed", "thu", "fri", "sun"],
+      "enabled": true
+    }
+  ]
+}

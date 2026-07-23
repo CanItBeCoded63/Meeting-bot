@@ -1,0 +1,55 @@
+version: "3.9"
+
+# Two joinly server instances — one per agent persona.
+# Agent Aria on host port 8001, Agent Sam on host port 8002.
+# Run: docker compose -f docker-compose.multi-agent.yml --env-file .env up -d
+#
+# NOTE: agents.yaml is the single source of truth for name/persona/voice —
+# azure-deploy/meeting_manager reads it dynamically per meeting (no
+# duplication there). This compose file is a separate, static local-testing
+# stack: JOINLY_TTS_ARGS below must be kept in sync with agents.yaml's
+# joinly_settings.tts_voice by hand if you change one.
+#
+# For actually joining a meeting locally, use join_meeting_docker.sh instead
+# — it resolves name/persona/voice from agents.yaml at runtime, nothing to
+# duplicate. (The --agents-config CLI flag referenced in older docs doesn't
+# exist; see GETTING_STARTED.md discrepancy noted separately.)
+
+services:
+  joinly-aria:
+    image: digix-joinly:latest
+    ports:
+      - "8001:8000"
+    env_file:
+      - .env
+    environment:
+      JOINLY_NAME: "Aria"
+      JOINLY_TTS_ARGS: '{"model_name": "aura-luna-en"}'
+      JOINLY_SERVER_HOST: "0.0.0.0"
+      JOINLY_SERVER_PORT: "8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  joinly-sam:
+    image: digix-joinly:latest
+    ports:
+      - "8002:8000"
+    env_file:
+      - .env
+    environment:
+      JOINLY_NAME: "Sam"
+      JOINLY_TTS_ARGS: '{"model_name": "aura-arcas-en"}'
+      JOINLY_SERVER_HOST: "0.0.0.0"
+      JOINLY_SERVER_PORT: "8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s

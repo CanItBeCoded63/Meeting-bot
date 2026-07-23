@@ -1,0 +1,19 @@
+# Mira provider selection. Values may reference root .env variables with ${VAR_NAME}.
+
+llm:
+  provider: azure
+  model: gpt-5.2-chat
+
+joinly:
+  language: en
+  self_aliases:
+    - Gantec Teams Assistant
+  vad: silero
+  stt: deepgram
+  tts: deepgram
+  args:
+    vad: {}
+    stt:
+      model_name: nova-3-general
+    tts:
+      model_name: aura-luna-en

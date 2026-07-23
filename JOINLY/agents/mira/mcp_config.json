@@ -1,0 +1,9 @@
+{
+    "mcpServers": {
+        "ticketing": {
+            "command": "ticketing-mcp",
+            "args": [],
+            "disabled": true
+        }
+    }
+}
